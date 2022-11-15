@@ -6,7 +6,7 @@ import MainPage from './pages/MainPage'
 import NoLpPositionsPage from './pages/NoLpPositionsPage'
 
 const App = () => {
-  const walletConnected = true
+  const walletConnected = false
   const hasLpPositions = true
 
   const PageComponent = walletConnected
@@ -16,12 +16,16 @@ const App = () => {
     : ConnectWalletPage
 
   return (
-    <div className="h-full w-full flex flex-col bg-gray-50 relative">
-      <Navbar />
+    <div className="relative flex flex-col w-full h-full bg-gray-50">
+      <div className="mb-2.5">
+        <Navbar />
+      </div>
       <div className="min-h-[750px] flex-1 mt-2.5 mb-2.5">
         <PageComponent />
       </div>
-      <Footer />
+      <div className="mt-2.5">
+        <Footer />
+      </div>
     </div>
   )
 }

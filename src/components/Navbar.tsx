@@ -1,12 +1,13 @@
 import React from 'react'
+import Logo from './Logo'
 
 const Navbar = () => {
   // wallet connection component data
 
   return (
-    <div className="w-full flex justify-between bg-white">
-      <div>Logo placeholder</div>
-      <div>Connect button placeholder</div>
+    <div className="flex justify-between w-full px-12 py-6 bg-white">
+      <Logo />
+      <button>Connect</button>
     </div>
   )
 }

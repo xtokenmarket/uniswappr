@@ -2,10 +2,12 @@ import React from 'react'
 
 const Footer = () => {
   return (
-    <div className="w-full flex justify-between bg-white">
-      <div>UniSwapper © 2022 xToken, LLC. All rights reserved.</div>
+    <div className="flex justify-between w-full px-12 bg-white py-7">
+      <div className="text-base">
+        UniSwapper © 2022 xToken, LLC. All rights reserved.
+      </div>
       <div>
-        <span>Twitter</span>
+        <span className="mr-7">Twitter</span>
         <span>Github</span>
       </div>
     </div>
