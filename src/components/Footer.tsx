@@ -6,9 +6,19 @@ const Footer = () => {
       <div className="text-base">
         UniSwapper © 2022 xToken, LLC. All rights reserved.
       </div>
-      <div>
-        <span className="mr-7">Twitter</span>
-        <span>Github</span>
+      <div className="flex">
+        <img
+          className="cursor-pointer mr-7"
+          alt="Twitter"
+          src="/assets/twitter.svg"
+          onClick={() => window.open('https://twitter.com', '_blank')}
+        />
+        <img
+          className="cursor-pointer"
+          alt="Github"
+          src="/assets/github.svg"
+          onClick={() => window.open('https://github.com', '_blank')}
+        />
       </div>
     </div>
   )

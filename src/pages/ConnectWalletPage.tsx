@@ -3,7 +3,7 @@ import React from 'react'
 const ConnectWalletPage = () => (
   <div className="flex flex-col h-full px-40 pt-24 bg-white">
     <div className="flex flex-col items-center mx-auto xl:flex-row">
-      <div className="w-[560px] h-[406px] bg-orange-300">Image placeholder</div>
+      <img alt="demo" src="/assets/main-img.png" />
 
       <div className="flex flex-col flex-1 ml-20 w-fit">
         <p className="text-4xl font-extrabold">
