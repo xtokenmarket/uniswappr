@@ -2,12 +2,19 @@
 module.exports = {
   content: [
     './src/**/*.{js,jsx,ts,tsx}',
-    'node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}'
+    'node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}',
   ],
+  darkMode: false,
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'pink-500': '#E74694',
+
+        'gray-50': '#F9FAFB',
+        'gray-500': '#6B7280',
+        'gray-900': '#111928',
+      },
+    },
   },
-  plugins: [
-    require('flowbite/plugin')
-  ]
+  plugins: [require('flowbite/plugin')],
 }
