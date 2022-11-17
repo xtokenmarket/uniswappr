@@ -6,8 +6,8 @@ import MainPage from './pages/MainPage'
 import NoLpPositionsPage from './pages/NoLpPositionsPage'
 
 const App = () => {
-  const walletConnected = false
-  const hasLpPositions = false
+  const walletConnected = true
+  const hasLpPositions = true
 
   const PageComponent = walletConnected
     ? hasLpPositions

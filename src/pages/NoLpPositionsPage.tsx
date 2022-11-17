@@ -8,7 +8,7 @@ const NoLpPositionsPage = () => (
     <p className="py-6 text-lg text-gray-500">
       There are no open positions associated with this wallet.
     </p>
-    <button className="w-fit">placholder button</button>
+    <button className="w-fit">placeholder button</button>
   </div>
 )
 
