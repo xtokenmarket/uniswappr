@@ -35,7 +35,7 @@ const TableHeader = () => {
 
 const tableRows = lpData.map((data) => (
   <Row className="bg-white dark:border-gray-700 dark:bg-gray-800" key={data.id}>
-    <Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+    <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
       {data.id}
     </Cell>
     <Cell>{data.token0.symbol}</Cell>
