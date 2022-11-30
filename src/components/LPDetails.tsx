@@ -1,5 +1,6 @@
 import React from 'react'
-import { Button, Card, Label, Spinner, Table, TextInput } from 'flowbite-react'
+import { Card, Label, Table, TextInput, Spinner } from 'flowbite-react'
+import Button, { EButtonVariant } from './Button'
 
 const { Cell, Row } = Table
 
@@ -21,7 +22,7 @@ const CheckIcon = () => {
 }
 
 const LPDetails = () => (
-  <div className="flex flex-col pt-10 h-full w-full">
+  <div className="flex flex-col w-full h-full pt-10">
     <p className="text-xl font-extrabold">#1</p>
     <div className="flex flex-col items-center mx-auto mt-2">
       <Table hoverable={false}>
@@ -34,22 +35,22 @@ const LPDetails = () => (
           <Cell>Upper Price</Cell>
         </Row>
         <Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-          <Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+          <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
             555.3516
           </Cell>
-          <Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+          <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
             75.35
           </Cell>
-          <Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+          <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
             6.16
           </Cell>
-          <Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+          <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
             316
           </Cell>
-          <Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+          <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
             0.36
           </Cell>
-          <Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+          <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
             55.6
           </Cell>
         </Row>
@@ -63,7 +64,7 @@ const LPDetails = () => (
         </h5>
         <form className="flex flex-row gap-4">
           <div>
-            <div className="mb-2 block">
+            <div className="block mb-2">
               <Label htmlFor="lowPrice" value="Low Price" />
             </div>
             <TextInput
@@ -74,7 +75,7 @@ const LPDetails = () => (
             />
           </div>
           <div>
-            <div className="mb-2 block">
+            <div className="block mb-2">
               <Label htmlFor="highPrice" value="High Price" />
             </div>
             <TextInput
@@ -101,7 +102,7 @@ const LPDetails = () => (
         <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
           Projected actions
         </h5>
-        <ul className="space-y-1 max-w-md list-inside text-gray-500 dark:text-gray-400">
+        <ul className="max-w-md space-y-1 text-gray-500 list-inside dark:text-gray-400">
           <li className="flex items-center">
             <CheckIcon />
             <p className="text-gray-900 dark:text-gray-300">
@@ -141,16 +142,12 @@ const LPDetails = () => (
         </ul>
         <div className="flex flex-wrap">
           <div className="w-[62%] mr-[3%]">
-            <Button className="w-full">Reposition</Button>
+            <Button className="w-[100%]">Reposition</Button>
           </div>
           <div className="w-[35%]">
-            {/*<Button outline>Cancel</Button>*/}
-            <button
-              type="button"
-              className="w-full text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-600 dark:focus:ring-blue-800"
-            >
+            <Button variant={EButtonVariant.secondary} className={'w-[100%]'}>
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       </Card>
