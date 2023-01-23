@@ -42,15 +42,16 @@ export function usePositions(signerOrProvider: any) {
 
         for (let i = 0; i < positionIds.length; i++) {
           const position = await uniPositionManager.positions(positionIds[i])
+          console.log('position', position)
           const token0 = position['token0']
           const token1 = position['token1']
 
-          const token0Contract = await new ethers.Contract(
+          const token0Contract = new ethers.Contract(
             token0,
             erc20Abi,
             signerOrProvider
           )
-          const token1Contract = await new ethers.Contract(
+          const token1Contract = new ethers.Contract(
             token1,
             erc20Abi,
             signerOrProvider
@@ -61,6 +62,8 @@ export function usePositions(signerOrProvider: any) {
 
           const stakedAmounts =
             await xtokenPositionManager.getStakedTokenBalance(positionIds[i])
+          const tickLower = position['tickLower']  
+          const tickUpper = position['tickUpper']  
 
           const stakedAmount0 = ethers.utils.formatUnits(
             stakedAmounts[0],
@@ -82,7 +85,8 @@ export function usePositions(signerOrProvider: any) {
               decimals: token1Details.decimals,
               stakedAmount: stakedAmount1,
             },
-
+            tickLower,
+            tickUpper,
             positionId: positionIds[i],
           }
 

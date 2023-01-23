@@ -4,26 +4,9 @@ import { Table } from 'flowbite-react'
 const { Body, Cell, Head, HeadCell, Row } = Table
 
 type LPTableParam = {
-  positions: any[]
+  positions: any[],
+  toggleSelected: any
 }
-
-const lpData = [
-  {
-    id: 1,
-    token0: { amount: 135.77, symbol: 'USDC' },
-    token1: { amount: 1.25, symbol: 'WETH' },
-  },
-  {
-    id: 2,
-    token0: { amount: 115, symbol: 'USDT' },
-    token1: { amount: 155.25, symbol: 'DAI' },
-  },
-  {
-    id: 3,
-    token0: { amount: 55.6, symbol: 'XTK' },
-    token1: { amount: 0.75, symbol: 'WETH' },
-  },
-]
 
 const TableHeader = () => {
   return (
@@ -37,31 +20,30 @@ const TableHeader = () => {
   )
 }
 
-// const tableRows = lpData.map((data) => (
-const tableRow = (position: any) => {
-  console.log('tablerowposition', position)
+const tableRow = (position: any, toggleSelected: any) => {
+  const { positionId, token0, token1 } = position
   return (
     <Row
-      className="bg-white dark:border-gray-700 dark:bg-gray-800"
-      key={position.positionId}
+      className="bg-white dark:border-gray-700 dark:bg-gray-800 cursor-pointer"
+      key={positionId}
+      onClick={() => toggleSelected(position)}
     >
       <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-        {position.positionId}
+        {positionId}
       </Cell>
-      <Cell>{position.token0.symbol}</Cell>
-      <Cell>{position.token0.stakedAmount}</Cell>
-      <Cell>{position.token1.symbol}</Cell>
-      <Cell>{position.token1.stakedAmount}</Cell>
+      <Cell>{token0.symbol}</Cell>
+      <Cell>{token0.stakedAmount}</Cell>
+      <Cell>{token1.symbol}</Cell>
+      <Cell>{token1.stakedAmount}</Cell>
     </Row>
   )
 } 
 
-const LPTable = ({ positions }: LPTableParam) => {
-  console.log('positions', positions)
+const LPTable = ({ positions, toggleSelected }: LPTableParam) => {
   return (
     <Table hoverable={true}>
       <TableHeader />
-      <Body className="divide-y">{positions.map(p => tableRow(p))}</Body>
+      <Body className="divide-y">{positions.map(p => tableRow(p, toggleSelected))}</Body>
     </Table>
   )
 }
