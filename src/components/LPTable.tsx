@@ -3,6 +3,10 @@ import { Table } from 'flowbite-react'
 
 const { Body, Cell, Head, HeadCell, Row } = Table
 
+type LPTableParam = {
+  positions: any[]
+}
+
 const lpData = [
   {
     id: 1,
@@ -33,23 +37,31 @@ const TableHeader = () => {
   )
 }
 
-const tableRows = lpData.map((data) => (
-  <Row className="bg-white dark:border-gray-700 dark:bg-gray-800" key={data.id}>
-    <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-      {data.id}
-    </Cell>
-    <Cell>{data.token0.symbol}</Cell>
-    <Cell>{data.token0.amount}</Cell>
-    <Cell>{data.token1.symbol}</Cell>
-    <Cell>{data.token1.amount}</Cell>
-  </Row>
-))
+// const tableRows = lpData.map((data) => (
+const tableRow = (position: any) => {
+  console.log('tablerowposition', position)
+  return (
+    <Row
+      className="bg-white dark:border-gray-700 dark:bg-gray-800"
+      key={position.positionId}
+    >
+      <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+        {position.positionId}
+      </Cell>
+      <Cell>{position.token0.symbol}</Cell>
+      <Cell>{position.token0.stakedAmount}</Cell>
+      <Cell>{position.token1.symbol}</Cell>
+      <Cell>{position.token1.stakedAmount}</Cell>
+    </Row>
+  )
+} 
 
-const LPTable = () => {
+const LPTable = ({ positions }: LPTableParam) => {
+  console.log('positions', positions)
   return (
     <Table hoverable={true}>
       <TableHeader />
-      <Body className="divide-y">{tableRows}</Body>
+      <Body className="divide-y">{positions.map(p => tableRow(p))}</Body>
     </Table>
   )
 }

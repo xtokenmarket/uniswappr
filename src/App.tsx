@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   chain,
   configureChains,
   createClient,
   useAccount,
   WagmiConfig,
+  useSigner,
 } from 'wagmi'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
@@ -15,8 +16,10 @@ import ConnectWalletPage from './pages/ConnectWalletPage'
 import MainPage from './pages/MainPage'
 import NoLpPositionsPage from './pages/NoLpPositionsPage'
 
+import { usePositions } from './hooks/usePositions'
+
 const { provider } = configureChains(
-  [chain.mainnet, chain.goerli],
+  [chain.polygon, chain.mainnet, chain.arbitrum, chain.goerli],
   [
     alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_API_KEY || '' }),
     publicProvider(),
@@ -30,15 +33,26 @@ const wagmiClient = createClient({
 
 const Main = () => {
   const { address, isConnected } = useAccount()
+  const { data: signer, isError, isLoading } = useSigner()
 
-  // @todo query the smart contract for this information
-  const hasLpPositions = Math.random() < 0.5
+  const [positions] = usePositions(signer)
+  const hasLpPositions = !!positions
 
-  const PageComponent = isConnected
-    ? hasLpPositions
-      ? MainPage
-      : NoLpPositionsPage
-    : ConnectWalletPage
+  const getPageComponent = () => {
+    if(isConnected) {
+      if(hasLpPositions) {
+        return (
+          <MainPage positions={positions} />
+        )
+      } else {
+        return (
+          <NoLpPositionsPage />
+        )
+      }
+    }
+
+    return <ConnectWalletPage />
+  }
 
   return (
     <div className="relative flex flex-col w-full h-full bg-gray-50">
@@ -46,7 +60,7 @@ const Main = () => {
         <Navbar />
       </div>
       <div className="min-h-[750px] flex-1 mt-2.5 mb-2.5">
-        <PageComponent />
+        {getPageComponent()}
       </div>
       <div className="mt-2.5">
         <Footer />

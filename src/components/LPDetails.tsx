@@ -26,6 +26,8 @@ const LPDetails = () => (
     <p className="text-xl font-extrabold">#1</p>
     <div className="flex flex-col items-center mx-auto mt-2">
       <Table hoverable={false}>
+        <tbody>
+
         <Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
           <Cell>Token0 Staked</Cell>
           <Cell>Token1 Staked</Cell>
@@ -54,6 +56,7 @@ const LPDetails = () => (
             55.6
           </Cell>
         </Row>
+        </tbody>
       </Table>
     </div>
 
