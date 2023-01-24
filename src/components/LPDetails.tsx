@@ -22,7 +22,7 @@ const CheckIcon = () => {
 }
 
 const LPDetails = ({ selectedPosition }: any) => {
-  const { positionId, token0, token1, tickLower, tickUpper } = selectedPosition
+  const { positionId, token0, token1, tickLower, tickUpper, lowPrice, highPrice } = selectedPosition
   return (
     <div className="flex flex-col w-full h-full pt-10">
       <p className="text-xl font-extrabold">Position ID: {positionId}</p>
@@ -51,10 +51,10 @@ const LPDetails = ({ selectedPosition }: any) => {
                 {tickUpper}
               </Cell>
               <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                0.36
+                {lowPrice.slice(0, 7)}
               </Cell>
               <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                55.6
+                {highPrice.slice(0, 7)}
               </Cell>
             </Row>
           </tbody>

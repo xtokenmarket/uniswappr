@@ -1,9 +1,19 @@
 import { useContract } from 'wagmi'
 import { useState, useEffect } from 'react'
 import { ethers, BigNumber } from 'ethers'
+import { tickToPrice } from '@uniswap/v3-sdk'
+import { Currency, CurrencyAmount, Price, Token } from '@uniswap/sdk-core'
+import {
+  encodeSqrtRatioX96,
+  FeeAmount,
+  nearestUsableTick,
+  priceToClosestTick,
+  TICK_SPACINGS,
+} from '@uniswap/v3-sdk/dist/'
 import uniswapV3PositionManagerAbi from '../abis/uniswapV3PositionManager.json'
 import xtokenPositionManagerAbi from '../abis/xtokenPositionManager.json'
 import erc20Abi from '../abis/erc20.json'
+import { getPriceRange } from '../utils'
 
 const UNISWAP_V3_POSITION_MANAGER = '0xC36442b4a4522E871399CD717aBDD847Ab11FE88'
 const XTOKEN_POSITION_MANAGER = '0xdce16ad5cfba50203766f270d69115c265d2687d' // polygon
@@ -45,6 +55,8 @@ export function usePositions(signerOrProvider: any) {
           console.log('position', position)
           const token0 = position['token0']
           const token1 = position['token1']
+          console.log('token0', token0)
+          console.log('token1', token1)
 
           const token0Contract = new ethers.Contract(
             token0,
@@ -62,8 +74,47 @@ export function usePositions(signerOrProvider: any) {
 
           const stakedAmounts =
             await xtokenPositionManager.getStakedTokenBalance(positionIds[i])
-          const tickLower = position['tickLower']  
-          const tickUpper = position['tickUpper']  
+          const tickLower = position['tickLower']
+          const tickUpper = position['tickUpper']
+
+          const chainId = await signerOrProvider.provider._network.chainId
+          const Token0 = new Token(
+            chainId,
+            token0,
+            token0Details.decimals,
+            token0Details.symbol,
+            token0Details.symbol
+          )
+          const Token1 = new Token(
+            chainId,
+            token1,
+            token1Details.decimals,
+            token1Details.symbol,
+            token1Details.symbol
+          )
+
+          const poolData = {
+            token0: Token0,
+            token1: Token1,
+            ticks: {
+              tick0: tickLower,
+              tick1: tickUpper,
+            },
+            poolFee: position.poolFee,
+            chainId,
+          }
+
+          const priceRange = getPriceRange(poolData)
+          const split = priceRange.split(' ')
+          const lowPrice = Number(split[0])
+          const highPrice = Number(split[5])
+
+          let adjustedLowPrice;
+          let adjustedHighPrice;
+          if (lowPrice < 1) {
+            adjustedLowPrice = 1 / highPrice
+            adjustedHighPrice = 1 / lowPrice
+          }
 
           const stakedAmount0 = ethers.utils.formatUnits(
             stakedAmounts[0],
@@ -88,6 +139,8 @@ export function usePositions(signerOrProvider: any) {
             tickLower,
             tickUpper,
             positionId: positionIds[i],
+            lowPrice: String(adjustedLowPrice ? adjustedLowPrice : lowPrice),
+            highPrice: String(adjustedLowPrice ? adjustedHighPrice : highPrice),
           }
 
           positions.push(positionDetails)
