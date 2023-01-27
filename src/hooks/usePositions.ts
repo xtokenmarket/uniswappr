@@ -55,8 +55,6 @@ export function usePositions(signerOrProvider: any) {
           console.log('position', position)
           const token0 = position['token0']
           const token1 = position['token1']
-          console.log('token0', token0)
-          console.log('token1', token1)
 
           const token0Contract = new ethers.Contract(
             token0,
@@ -109,12 +107,16 @@ export function usePositions(signerOrProvider: any) {
           const lowPrice = Number(split[0])
           const highPrice = Number(split[5])
 
-          let adjustedLowPrice;
-          let adjustedHighPrice;
-          if (lowPrice < 1) {
-            adjustedLowPrice = 1 / highPrice
-            adjustedHighPrice = 1 / lowPrice
-          }
+        //   let adjustedLowPrice;
+        //   let adjustedHighPrice;
+          const priceRangeText = `${token0Details.symbol} / ${token1Details.symbol}`
+        //   let tokensFlipped = false;
+        //   if (lowPrice < 1) {
+        //     adjustedLowPrice = 1 / highPrice
+        //     adjustedHighPrice = 1 / lowPrice
+        //     priceRangeText = `${token1Details.symbol} / ${token0Details.symbol}`
+        //     tokensFlipped = true;
+        //   }
 
           const stakedAmount0 = ethers.utils.formatUnits(
             stakedAmounts[0],
@@ -139,8 +141,13 @@ export function usePositions(signerOrProvider: any) {
             tickLower,
             tickUpper,
             positionId: positionIds[i],
-            lowPrice: String(adjustedLowPrice ? adjustedLowPrice : lowPrice),
-            highPrice: String(adjustedLowPrice ? adjustedHighPrice : highPrice),
+            lowPrice,
+            // lowPrice: String(adjustedLowPrice ? adjustedLowPrice : lowPrice),
+            highPrice,
+            // highPrice: String(adjustedLowPrice ? adjustedHighPrice : highPrice),
+            priceRangeText,
+            // tokensFlipped,
+            poolData
           }
 
           positions.push(positionDetails)

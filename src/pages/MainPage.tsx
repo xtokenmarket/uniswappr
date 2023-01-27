@@ -9,7 +9,6 @@ type MainPageParam = {
 
 const MainPage = ({ positions }: MainPageParam) => {
   const [selected, toggleSelected] = useState<any>(null)
-  console.log('selected', selected)
 
   return (
     <div className="flex flex-col h-full px-12 pt-10">
