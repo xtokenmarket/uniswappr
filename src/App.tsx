@@ -59,12 +59,13 @@ const Main = () => {
       <div className="mb-2.5">
         <Navbar />
       </div>
-      <div className="min-h-[750px] flex-1 mt-2.5 mb-2.5">
+      <div className="">
+      {/* <div className="min-h-[750px] flex-1 mt-2.5 mb-2.5"> */}
         {getPageComponent()}
       </div>
-      <div className="mt-2.5">
+      {/* <div className="mt-2.5">
         <Footer />
-      </div>
+      </div> */}
     </div>
   )
 }

@@ -6,7 +6,8 @@ import NewPriceRange from './NewPriceRange'
 
 const { Cell, Row } = Table
 
-const LPDetails = ({ selectedPosition }: any) => {
+function LPDetails({ selectedPosition }: any) {
+// const LPDetails = ({ selectedPosition }: any) => {
   const {
     positionId,
     token0,

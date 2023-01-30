@@ -24,7 +24,7 @@ export function tryParseTick(baseToken, quoteToken, feeAmount, value) {
     : [quoteToken, baseToken]
 
   const invertPrice = Boolean(baseToken && token0 && !baseToken.equals(token0))
-  console.log('invertPrice', invertPrice)
+  // console.log('invertPrice', invertPrice)
 
   const price = tryParsePrice(token0, token1, value)
   console.log('tryParsePrice', price)
