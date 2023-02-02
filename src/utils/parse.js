@@ -11,10 +11,6 @@ const JSBI = require('jsbi')
 const { Currency, CurrencyAmount, Price, Token } = require('@uniswap/sdk-core')
 
 export function tryParseTick(baseToken, quoteToken, feeAmount, value) {
-  console.log('baseToken', baseToken)
-  console.log('quoteToken', quoteToken)
-  console.log('feeAmount', feeAmount)
-  console.log('value', value)
   if (!baseToken || !quoteToken || !feeAmount || !value) {
     return undefined
   }
@@ -27,8 +23,6 @@ export function tryParseTick(baseToken, quoteToken, feeAmount, value) {
   // console.log('invertPrice', invertPrice)
 
   const price = tryParsePrice(token0, token1, value)
-  console.log('tryParsePrice', price)
-  console.log('value', value)
   
   if (!price) {
     return undefined

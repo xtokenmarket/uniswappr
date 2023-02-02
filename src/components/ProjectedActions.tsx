@@ -19,7 +19,19 @@ const CheckIcon = () => {
   )
 }
 
-const ProjectedActions = () => {
+const ProjectedItem = ({ lineItem }: any) => {
+  return (
+    <li className="flex items-center">
+      <CheckIcon />
+      <p className="text-gray-900 dark:text-gray-300">
+        {lineItem}
+      </p>
+    </li>
+  )
+}
+
+const ProjectedActions = ({ projectedActions }: any) => {
+  console.log('projectedActions', projectedActions)
   return (
     <div className="flex flex-col pt-10">
       <Card href="#">
@@ -30,7 +42,8 @@ const ProjectedActions = () => {
           Projected actions
         </h5>
         <ul className="max-w-md space-y-1 text-gray-500 list-inside dark:text-gray-400">
-          <li className="flex items-center">
+
+          {/* <li className="flex items-center">
             <CheckIcon />
             <p className="text-gray-900 dark:text-gray-300">
               Remove{' '}
@@ -65,7 +78,7 @@ const ProjectedActions = () => {
               </strong>{' '}
               from current position.
             </p>
-          </li>
+          </li> */}
         </ul>
         <div className="flex flex-wrap">
           <div className="w-[62%] mr-[3%]">

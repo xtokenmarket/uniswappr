@@ -1,13 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, Label, Table, TextInput, Spinner } from 'flowbite-react'
 import Button, { EButtonVariant } from './Button'
-// import ProjectedActions from './ProjectedActions'
+import ProjectedActions from './ProjectedActions'
 import NewPriceRange from './NewPriceRange'
 
 const { Cell, Row } = Table
 
 function LPDetails({ selectedPosition }: any) {
-// const LPDetails = ({ selectedPosition }: any) => {
+  const [projectedActions, setProjectedActions] = useState([])
   const {
     positionId,
     token0,
@@ -17,7 +17,7 @@ function LPDetails({ selectedPosition }: any) {
     lowPrice,
     highPrice,
     priceRangeText,
-    poolData
+    poolData,
   } = selectedPosition
 
   return (
@@ -59,7 +59,13 @@ function LPDetails({ selectedPosition }: any) {
           </tbody>
         </Table>
       </div>
-      <NewPriceRange lowPrice={lowPrice} highPrice={highPrice} poolData={poolData} />
+      <NewPriceRange
+        poolData={poolData}
+        setProjectedActions={setProjectedActions}
+      />
+      {projectedActions.length > 0 && (
+        <ProjectedActions projectedActions={projectedActions} />
+      )}
     </div>
   )
 }

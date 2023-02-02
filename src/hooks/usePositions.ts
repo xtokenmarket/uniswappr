@@ -1,22 +1,16 @@
+/* eslint-disable */
 import { useContract } from 'wagmi'
 import { useState, useEffect } from 'react'
 import { ethers, BigNumber } from 'ethers'
-import { tickToPrice } from '@uniswap/v3-sdk'
-import { Currency, CurrencyAmount, Price, Token } from '@uniswap/sdk-core'
-import {
-  encodeSqrtRatioX96,
-  FeeAmount,
-  nearestUsableTick,
-  priceToClosestTick,
-  TICK_SPACINGS,
-} from '@uniswap/v3-sdk/dist/'
+import { Token } from '@uniswap/sdk-core'
 import uniswapV3PositionManagerAbi from '../abis/uniswapV3PositionManager.json'
 import xtokenPositionManagerAbi from '../abis/xtokenPositionManager.json'
 import erc20Abi from '../abis/erc20.json'
 import { getPriceRange } from '../utils'
-
-const UNISWAP_V3_POSITION_MANAGER = '0xC36442b4a4522E871399CD717aBDD847Ab11FE88'
-const XTOKEN_POSITION_MANAGER = '0xdce16ad5cfba50203766f270d69115c265d2687d' // polygon
+const {
+  UNISWAP_V3_POSITION_MANAGER,
+  XTOKEN_POSITION_MANAGER,
+} = require('../utils/constants')
 
 export function usePositions(signerOrProvider: any) {
   const [positions, setPositions] = useState<any[]>()
@@ -30,7 +24,7 @@ export function usePositions(signerOrProvider: any) {
   useEffect(() => {
     async function fetchPositions() {
       if (signerOrProvider && xtokenPositionManager) {
-        const uniPositionManager = await new ethers.Contract(
+        const uniPositionManager = new ethers.Contract(
           UNISWAP_V3_POSITION_MANAGER,
           uniswapV3PositionManagerAbi,
           signerOrProvider
@@ -98,8 +92,9 @@ export function usePositions(signerOrProvider: any) {
               tick0: tickLower,
               tick1: tickUpper,
             },
-            poolFee: position.poolFee,
+            poolFee: position.fee,
             chainId,
+            nftId: positionIds[i],
           }
 
           const priceRange = getPriceRange(poolData)
@@ -107,16 +102,7 @@ export function usePositions(signerOrProvider: any) {
           const lowPrice = Number(split[0])
           const highPrice = Number(split[5])
 
-        //   let adjustedLowPrice;
-        //   let adjustedHighPrice;
           const priceRangeText = `${token0Details.symbol} / ${token1Details.symbol}`
-        //   let tokensFlipped = false;
-        //   if (lowPrice < 1) {
-        //     adjustedLowPrice = 1 / highPrice
-        //     adjustedHighPrice = 1 / lowPrice
-        //     priceRangeText = `${token1Details.symbol} / ${token0Details.symbol}`
-        //     tokensFlipped = true;
-        //   }
 
           const stakedAmount0 = ethers.utils.formatUnits(
             stakedAmounts[0],
@@ -142,12 +128,9 @@ export function usePositions(signerOrProvider: any) {
             tickUpper,
             positionId: positionIds[i],
             lowPrice,
-            // lowPrice: String(adjustedLowPrice ? adjustedLowPrice : lowPrice),
             highPrice,
-            // highPrice: String(adjustedLowPrice ? adjustedHighPrice : highPrice),
             priceRangeText,
-            // tokensFlipped,
-            poolData
+            poolData,
           }
 
           positions.push(positionDetails)

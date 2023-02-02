@@ -1,6 +1,12 @@
 import { Token } from '@uniswap/sdk-core'
 import { tickToPrice } from '@uniswap/v3-sdk'
 
+const formatNumber = (price) => {
+  const priceInt = parseInt(price)
+  // const toFixed = priceInt >= 100 ? 0 : priceInt >= 1 ? 3 : 4
+  return parseFloat(Number(price).toFixed(10))
+}
+
 export const getPriceRange = (poolData) => {
   const { token0, token1, ticks, poolFee, chainId } = poolData
   const { tick0, tick1 } = ticks
@@ -8,13 +14,7 @@ export const getPriceRange = (poolData) => {
   const numberPoolFee = Number(poolFee)
   const numberTick0 = Number(tick0)
   const numberTick1 = Number(tick1)
-
-  const formatNumber = (price) => {
-    const priceInt = parseInt(price)
-    // const toFixed = priceInt >= 100 ? 0 : priceInt >= 1 ? 3 : 4
-    return parseFloat(Number(price).toFixed(10))
-  }
-
+  
   if (
     (numberPoolFee === 500 &&
       numberTick0 == -887270 &&
@@ -44,7 +44,28 @@ export const getPriceRange = (poolData) => {
   }`
 }
 
-const getPriceFromTicks = (
+export const getPriceFromTicksFormatted = (
+  tickLower,
+  tickUpper,
+  _token0,
+  _token1,
+  chainId
+) => {
+  const { priceLower, priceUpper } = getPriceFromTicks(
+    tickLower,
+    tickUpper,
+    _token0,
+    _token1,
+    chainId
+  )
+  return `${formatNumber(priceLower.toSignificant(8))} ${_token0.symbol} per ${
+    _token1.symbol
+  } to ${formatNumber(priceUpper.toSignificant(8))} ${_token0.symbol} per ${
+    _token1.symbol
+  }`
+}
+
+export const getPriceFromTicks = (
   tickLower,
   tickUpper,
   _token0,
