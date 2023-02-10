@@ -19,7 +19,7 @@ import NoLpPositionsPage from './pages/NoLpPositionsPage'
 import { usePositions } from './hooks/usePositions'
 
 const { provider } = configureChains(
-  [chain.polygon, chain.mainnet, chain.arbitrum, chain.goerli],
+  [chain.polygon, chain.mainnet, chain.arbitrum, chain.optimism],
   [
     alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_API_KEY || '' }),
     publicProvider(),
@@ -39,15 +39,21 @@ const Main = () => {
   const hasLpPositions = !!positions
 
   const getPageComponent = () => {
-    if(isConnected) {
-      if(hasLpPositions) {
+    if (isConnected) {
+      if (positions === undefined) {
         return (
-          <MainPage positions={positions} />
+          <div className="flex flex-col h-full px-12 pt-10 text-center">
+            <div className="flex flex-col mx-auto xl:flex-column">
+              <div className="w-[850px]">Loading positions...</div>
+            </div>
+          </div>
         )
+      }
+
+      if (hasLpPositions) {
+        return <MainPage positions={positions} />
       } else {
-        return (
-          <NoLpPositionsPage />
-        )
+        return <NoLpPositionsPage />
       }
     }
 
@@ -60,7 +66,7 @@ const Main = () => {
         <Navbar />
       </div>
       <div className="">
-      {/* <div className="min-h-[750px] flex-1 mt-2.5 mb-2.5"> */}
+        {/* <div className="min-h-[750px] flex-1 mt-2.5 mb-2.5"> */}
         {getPageComponent()}
       </div>
       {/* <div className="mt-2.5">

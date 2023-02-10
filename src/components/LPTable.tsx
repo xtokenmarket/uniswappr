@@ -1,12 +1,8 @@
 import React from 'react'
 import { Table } from 'flowbite-react'
+import { showFeeTier } from '../utils'
 
 const { Body, Cell, Head, HeadCell, Row } = Table
-
-type LPTableParam = {
-  positions: any[],
-  toggleSelected: any
-}
 
 const TableHeader = () => {
   return (
@@ -16,34 +12,56 @@ const TableHeader = () => {
       <HeadCell>Amount</HeadCell>
       <HeadCell>Token</HeadCell>
       <HeadCell>Amount</HeadCell>
+      <HeadCell>Fee Tier</HeadCell>
+      <HeadCell>In Range</HeadCell>
     </Head>
   )
 }
 
-const tableRow = (position: any, toggleSelected: any) => {
-  const { positionId, token0, token1 } = position
+const TableRow = ({ position, select, selected }: any) => {
+  const {
+    positionId,
+    token0,
+    token1,
+    poolData,
+    poolData: { positionInRange },
+  } = position
   return (
     <Row
-      className="bg-white dark:border-gray-700 dark:bg-gray-800 cursor-pointer"
-      key={positionId}
-      onClick={() => toggleSelected(position)}
+      className={`bg-white bg-white dark:border-gray-700 dark:bg-gray-800 cursor-pointer`}
+      onClick={select}
     >
       <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
         {positionId}
       </Cell>
       <Cell>{token0.symbol}</Cell>
-      <Cell>{token0.stakedAmount}</Cell>
+      <Cell>{token0.stakedAmount.slice(0, 7)}</Cell>
       <Cell>{token1.symbol}</Cell>
-      <Cell>{token1.stakedAmount}</Cell>
+      <Cell>{token1.stakedAmount.slice(0, 7)}</Cell>
+      <Cell>{showFeeTier(poolData.poolFee)}</Cell>
+      <Cell className={positionInRange ? `text-green-500` : `text-red-500`}>
+        {positionInRange ? 'Yes' : 'No'}
+      </Cell>
     </Row>
   )
-} 
+}
 
-const LPTable = ({ positions, toggleSelected }: LPTableParam) => {
+const LPTable = ({ positions, select, selectedIdx }: any) => {
   return (
     <Table hoverable={true}>
       <TableHeader />
-      <Body className="divide-y">{positions.map(p => tableRow(p, toggleSelected))}</Body>
+      <Body className="divide-y">
+        {positions.map((p: any, i: any) => {
+          return (
+            <TableRow
+              position={p}
+              select={() => select(i)}
+              selected={selectedIdx === i}
+              key={i}
+            />
+          )
+        })}
+      </Body>
     </Table>
   )
 }

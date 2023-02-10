@@ -1,11 +1,17 @@
 import React, { useState } from 'react'
 import { useSigner } from 'wagmi'
 import { Card, Label, Table, TextInput, Spinner } from 'flowbite-react'
-import Button, { EButtonVariant } from './Button'
-import { tryParseTick } from '../utils/parse'
-import { repositionSim } from '../utils/submit'
+import Button, { EButtonVariant } from '../Button'
+import { tryParseTick } from '../../utils/parse'
+import { repositionSim } from '../../utils/submit'
+import { getSwapParams } from '../../utils/getSwapParams'
 
-function NewPriceRange({ poolData, setProjectedActions }: any) {
+function NewPriceRange({
+  poolData,
+  setProjectedActions,
+  toggleSimRunning,
+  setRepositionParams,
+}: any) {
   const { data: signer } = useSigner()
 
   const [state, setState] = useState({
@@ -57,13 +63,22 @@ function NewPriceRange({ poolData, setProjectedActions }: any) {
 
   const runRepositionSim = async (e: any) => {
     e.preventDefault()
-    const { projectedActions } = await repositionSim(signer, poolData, {
-      positionId: poolData.nftId,
-      newTickLower: state.leftTick,
-      newTickUpper: state.rightTick,
-    })
+    toggleSimRunning(true)
+    const { projectedActions, repositionParams } = await repositionSim(
+      signer,
+      poolData,
+      {
+        positionId: poolData.nftId,
+        newTickLower: state.leftTick,
+        newTickUpper: state.rightTick,
+      }
+    )
     setProjectedActions(projectedActions)
+    setRepositionParams(repositionParams)
+    toggleSimRunning(false)
   }
+
+  const outOfRange = !poolData.positionInRange
 
   return (
     <div className="flex flex-col pt-10">
@@ -85,6 +100,7 @@ function NewPriceRange({ poolData, setProjectedActions }: any) {
               onBlur={onBlurLeft}
               value={state.leftPrice}
               required={true}
+              disabled={outOfRange ? true : false}
             />
             <div className="text-xs text-gray-900 whitespace-nowrap dark:text-white mt-2">
               {poolData.token0.symbol} per {poolData.token1.symbol}
@@ -101,14 +117,19 @@ function NewPriceRange({ poolData, setProjectedActions }: any) {
               placeholder=""
               onChange={rightPriceInputChange}
               onBlur={onBlurRight}
+              disabled={outOfRange ? true : false}
             />
             <div className="text-xs text-gray-900 whitespace-nowrap dark:text-white mt-2">
               {poolData.token0.symbol} per {poolData.token1.symbol}
             </div>
           </div>
           <div className="flex items-end flex-1 mb-6 cursor-pointer">
-            <Button className="w-full" type="submit">
-              Simulate
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={outOfRange ? true : false}
+            >
+              {outOfRange ? 'Out of Range Unsupported' : 'Simulate'}
             </Button>
           </div>
         </form>

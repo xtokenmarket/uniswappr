@@ -46,7 +46,6 @@ export function usePositions(signerOrProvider: any) {
 
         for (let i = 0; i < positionIds.length; i++) {
           const position = await uniPositionManager.positions(positionIds[i])
-          console.log('position', position)
           const token0 = position['token0']
           const token1 = position['token1']
 
@@ -66,6 +65,24 @@ export function usePositions(signerOrProvider: any) {
 
           const stakedAmounts =
             await xtokenPositionManager.getStakedTokenBalance(positionIds[i])
+          const stakedAmount0 = ethers.utils.formatUnits(
+            stakedAmounts[0],
+            token0Details.decimals
+          )
+          const stakedAmount1 = ethers.utils.formatUnits(
+            stakedAmounts[1],
+            token1Details.decimals
+          )
+
+          // if true, position has been previously closed
+          if (stakedAmount0 == '0.0' && stakedAmount1 == '0.0') {
+            continue
+          }
+
+          let positionInRange = true
+          if (stakedAmount0 == '0.0' || stakedAmount1 == '0.0') {
+            positionInRange = false
+          }
           const tickLower = position['tickLower']
           const tickUpper = position['tickUpper']
 
@@ -95,6 +112,7 @@ export function usePositions(signerOrProvider: any) {
             poolFee: position.fee,
             chainId,
             nftId: positionIds[i],
+            positionInRange,
           }
 
           const priceRange = getPriceRange(poolData)
@@ -103,15 +121,6 @@ export function usePositions(signerOrProvider: any) {
           const highPrice = Number(split[5])
 
           const priceRangeText = `${token0Details.symbol} / ${token1Details.symbol}`
-
-          const stakedAmount0 = ethers.utils.formatUnits(
-            stakedAmounts[0],
-            token0Details.decimals
-          )
-          const stakedAmount1 = ethers.utils.formatUnits(
-            stakedAmounts[1],
-            token1Details.decimals
-          )
 
           const positionDetails = {
             token0: {

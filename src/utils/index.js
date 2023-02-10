@@ -14,7 +14,7 @@ export const getPriceRange = (poolData) => {
   const numberPoolFee = Number(poolFee)
   const numberTick0 = Number(tick0)
   const numberTick1 = Number(tick1)
-  
+
   if (
     (numberPoolFee === 500 &&
       numberTick0 == -887270 &&
@@ -94,4 +94,18 @@ export const getPriceFromTicks = (
     priceLower,
     priceUpper,
   }
+}
+
+export const showFeeTier = fee => {
+  if(fee === 10000) return '1%'
+  if(fee === 3000) return '0.3%'
+  if(fee === 500) return '0.05%'
+  if(fee === 100) return '0.01%'
+}
+
+export const showNetworkName = chainId => {
+  if(chainId === 1)return 'Ethereum'
+  if(chainId === 10)return 'Optimism'
+  if(chainId === 137)return 'Polygon'
+  if(chainId === 42161)return 'Arbitrum'
 }

@@ -1,14 +1,17 @@
 import React, { useState } from 'react'
-
 import LPTable from '../components/LPTable'
 import LPDetails from '../components/LPDetails'
 
-type MainPageParam = {
-  positions: any[]
-}
 
-const MainPage = ({ positions }: MainPageParam) => {
-  const [selected, toggleSelected] = useState<any>(null)
+const MainPage = ({ positions }: any) => {
+  const [selected, toggleSelected] = useState<any>(null) // should be idx
+  const [selectedIdx, toggleSelectedIdx] = useState<number>()
+
+  const select = (idx: number) => {
+    toggleSelected(positions[idx])
+    toggleSelectedIdx(idx)
+  }
+
   return (
     <div className="flex flex-col h-full px-12 pt-10">
       <div className="flex flex-col mx-auto xl:flex-column">
@@ -17,7 +20,11 @@ const MainPage = ({ positions }: MainPageParam) => {
           <p className="mt-2 text-gray-500 mb-5">
             Reposition your Uniswap Liquidity
           </p>
-          <LPTable positions={positions} toggleSelected={toggleSelected} />
+          <LPTable
+            positions={positions}
+            select={select}
+            selectedIdx={selectedIdx}
+          />
         </div>
 
         <div className="flex flex-col flex-1 mt-10 w-[850px]">
