@@ -43,12 +43,6 @@ export const repositionSim = async (
 ) => {
   /* Simulation */
   const { REACT_APP_ALCHEMY_API_KEY } = process.env
-  const alchemySettings = {
-    apiKey: REACT_APP_ALCHEMY_API_KEY,
-    network: Network.MATIC_MAINNET, // todo: do dynamically
-  }
-
-  const alchemy = new Alchemy(alchemySettings)
   const xtokenPositionManager = new ethers.Contract(
     XTOKEN_POSITION_MANAGER,
     xtokenPositionManagerAbi,
@@ -72,26 +66,25 @@ export const repositionSim = async (
     value: '0x0',
     data: unsignedApprovalTx.data,
   }
+  console.log('positionData', positionData)
+  console.log('repositionParams', repositionParams)
 
   const { positionId, newTickLower, newTickUpper } = repositionParams
   const { token0, token1 } = positionData
   const token0Decimals = token0.decimals
   const token1Decimals = token1.decimals
 
-  let deposited = await xtokenPositionManager.getStakedTokenBalance(positionId)
+
   const { tokenToSwap, tokenAmountToSwap } = await getSwapParams(
     signerOrProvider,
     positionId,
     newTickLower,
-    newTickUpper
+    newTickUpper,
+    positionData.poolFee
   )
 
   const fromToken = tokenToSwap === 'token0' ? token0.address : token1.address
   const toToken = tokenToSwap === 'token0' ? token1.address : token0.address
-  console.log('tokenToSwap', tokenToSwap)
-  console.log('fromToken', fromToken)
-  console.log('toToken', toToken)
-  console.log('tokenAmountToSwap', tokenAmountToSwap)
 
   let oneInchData = await getOneInchCalldata(
     xtokenPositionManager.address,
@@ -109,10 +102,6 @@ export const repositionSim = async (
     minAmount1Staked: 0,
     oneInchData,
   }
-  console.log(
-    'params',
-    `{positionId: ${positionId}, newTickLower: ${newTickLower}, newTickUpper: ${newTickUpper}, minAmount0Staked: 0, minAmount1Staked: 0, oneInchData: ${oneInchData}}`
-  )
   const unsignedRepositionTx =
     await xtokenPositionManager.populateTransaction.reposition(params)
 
@@ -144,13 +133,7 @@ export const repositionSim = async (
     (l) => l.decoded?.eventName == 'DecreaseLiquidity'
   )
   const swapEvent = logs.filter((l) => l.decoded?.eventName == 'Swap')
-  const repositionedEvent = logs.filter(
-    (l) => l.decoded?.eventName == 'Repositioned'
-  )
   const transferEvents = logs.filter((l) => l.decoded?.eventName == 'Transfer')
-  const increaseEvents = logs.filter(
-    (l) => l.decoded?.eventName == 'IncreaseLiquidity'
-  )
   const mintEvent = logs.filter((l) => l.decoded?.eventName == 'Mint')
 
   const feeAmountsCollected = getCollectedFeeAmounts(
@@ -250,113 +233,11 @@ export const getOneInchCalldata = async (
   swapAmount,
   fromToken,
   toToken
-  //   _0for1
 ) => {
-  //   let networkId = getNetworkId(network)
-  //   if (_0for1) {
   let apiUrl = `https://api.1inch.exchange/v4.0/${networkId}/swap?fromTokenAddress=${fromToken}&toTokenAddress=${toToken}&amount=${swapAmount}&fromAddress=${lpSwapperAddress}&slippage=50&disableEstimate=true`
   let response = await axios.get(apiUrl)
   let oneInchData = response.data.tx.data
-  // //   } else {
-  //     let apiUrl = `https://api.1inch.exchange/v4.0/${networkId}/swap?fromTokenAddress=${t1Address}&toTokenAddress=${t0Address}&amount=${swapAmount}&fromAddress=${lpSwapperAddress}&slippage=50&disableEstimate=true`
-  //     let response = await axios.get(apiUrl)
-  //     oneInchData = response.data.tx.data
   return oneInchData
-}
-// }
-
-async function getRepositionSwapAmount(
-  LPManager, //xtokenpositionmanager
-  positionId,
-  amount0,
-  amount1,
-  token0Decimals,
-  token1Decimals,
-  newTickLower,
-  newTickUpper,
-  considerPoolLiquidity
-) {
-  let poolPrice = await LPManager.getPoolPrice(positionId)
-  let priceLower = await LPManager.getPriceFromTick(newTickLower)
-  let priceUpper = await LPManager.getPriceFromTick(newTickUpper)
-  let minted = await getMintedAmounts(
-    LPManager,
-    amount0,
-    amount1,
-    poolPrice,
-    priceLower,
-    priceUpper
-  )
-  let midPrice = await LPManager.getPoolPriceWithDecimals(
-    positionId,
-    token0Decimals,
-    token1Decimals
-  )
-
-  let mintLiquidity = await LPManager[
-    'getLiquidityForAmounts(uint256,uint256,uint256)'
-  ](minted[0], minted[1], positionId)
-  let poolLiquidity = await LPManager.getPoolLiquidity(positionId)
-  let liquidityRatio = mintLiquidity.mul(bn(10).pow(18)).div(poolLiquidity)
-
-  // n - swap amt, x - amount 0 to mint, y - amount 1 to mint,
-  // z - amount 0 minted, t - amount 1 minted, p0 - pool mid price
-  // l - liquidity ratio (current mint liquidity vs total pool liq)
-  // (X - n) / (Y + n * p0) = (Z + l * n) / (T - l * n * p0) ->
-  // n = (X * T - Y * Z) / (p0 * l * X + p0 * Z + l * Y + T)
-
-  let denominator
-  if (considerPoolLiquidity) {
-    // with liquidity ratio
-    denominator = amount0
-      .mul(liquidityRatio)
-      .mul(midPrice)
-      .div(bn(10).pow(18))
-      .div(1e12)
-      .add(midPrice.mul(minted[0]).div(1e12))
-      .add(liquidityRatio.mul(amount1).div(bn(10).pow(18)))
-      .add(minted[1])
-  } else {
-    // without liquidity ratio
-    denominator = amount0
-      .mul(midPrice)
-      .div(1e12)
-      .add(midPrice.mul(minted[0]).div(1e12))
-      .add(amount1)
-      .add(minted[1])
-  }
-
-  let a = amount0.mul(minted[1]).div(denominator)
-  let b = amount1.mul(minted[0]).div(denominator)
-  let swapAmount = a.gte(b) ? a.sub(b) : b.sub(a).mul(midPrice).div(1e12)
-  let swapSign = a.gte(b) ? true : false
-
-  return [swapAmount, swapSign]
-}
-
-const getMintedAmounts = async (
-  LPManager,
-  amount0,
-  amount1,
-  poolPrice,
-  priceLower,
-  priceUpper
-) => {
-  let amountsMinted = await LPManager.calculatePoolMintedAmounts(
-    amount0,
-    amount1,
-    poolPrice,
-    priceLower,
-    priceUpper
-  )
-  return [
-    amountsMinted.amount0Minted.toString(),
-    amountsMinted.amount1Minted.toString(),
-  ]
-}
-
-function bn(amount) {
-  return ethers.BigNumber.from(amount)
 }
 
 const getCollectedFeeAmounts = (
@@ -427,7 +308,6 @@ const getNewPositionData = (mintEvent, token0, token1, chainId) => {
 }
 
 const getSwapData = (swapEvent, token0, token1) => {
-  console.log('swapEvent', swapEvent)
   if (!swapEvent.length) return `No swaps performed`
 
   const inputs = swapEvent[0].decoded.inputs
@@ -451,8 +331,6 @@ const getSwapData = (swapEvent, token0, token1) => {
   ).slice(0, 7)} ${tokenIn}`
 }
 
-const parseTransfersForSwaps = (transferEvents) => {}
-
 const getTokenRetrievals = (
   allEvents,
   transferEvents,
@@ -466,7 +344,6 @@ const getTokenRetrievals = (
   const token0Retrieval = retrievedEvents.find(
     (e) => ethers.utils.getAddress(e.address) == token0.address
   )
-
   const token1Retrieval = retrievedEvents.find(
     (e) => ethers.utils.getAddress(e.address) == token1.address
   )
@@ -505,49 +382,4 @@ const getTokenRetrievals = (
     token0Text: `Return ${token0Text} to user`,
     token1Text: `Return ${token1Text} to user`,
   }
-}
-
-export const getTxDataForReposition = async (
-  signerOrProvider,
-  repositionParams,
-  positionData,
-  xtokenPositionManager
-) => {
-  const { positionId, newTickLower, newTickUpper } = repositionParams
-  const { token0, token1 } = positionData
-  const token0Decimals = token0.decimals
-  const token1Decimals = token1.decimals
-  let deposited = await xtokenPositionManager.getStakedTokenBalance(positionId)
-  let [swapAmt, side] = await getRepositionSwapAmount(
-    xtokenPositionManager,
-    positionId,
-    deposited.amount0,
-    deposited.amount1,
-    token0Decimals,
-    token1Decimals,
-    repositionParams.newTickLower,
-    repositionParams.newTickUpper,
-    true
-    // false
-  )
-  let oneInchData = await getOneInchCalldata(
-    xtokenPositionManager.address,
-    signerOrProvider.provider._network.chainId,
-    swapAmt,
-    token0.address,
-    token1.address,
-    side
-  )
-
-  let params = {
-    positionId,
-    newTickLower,
-    newTickUpper,
-    minAmount0Staked: 0,
-    minAmount1Staked: 0,
-    oneInchData,
-  }
-  const unsignedRepositionTx =
-    await xtokenPositionManager.populateTransaction.reposition(params)
-  return unsignedRepositionTx.data
 }

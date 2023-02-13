@@ -105,6 +105,8 @@ export function usePositions(signerOrProvider: any) {
           const poolData = {
             token0: Token0,
             token1: Token1,
+            token0Staked: stakedAmounts[0],
+            token1Staked: stakedAmounts[1],
             ticks: {
               tick0: tickLower,
               tick1: tickUpper,
@@ -144,6 +146,7 @@ export function usePositions(signerOrProvider: any) {
 
           positions.push(positionDetails)
         }
+        console.log('positions', positions)
 
         setPositions(positions)
       }

@@ -58,10 +58,15 @@ export const getPriceFromTicksFormatted = (
     _token1,
     chainId
   )
-  return `${formatNumber(priceLower.toSignificant(8))} ${_token0.symbol} per ${
-    _token1.symbol
-  } to ${formatNumber(priceUpper.toSignificant(8))} ${_token0.symbol} per ${
-    _token1.symbol
+  console.log('_token0.symbol', _token0.symbol)  
+  console.log('_token1.symbol', _token1.symbol)  
+  console.log('priceLower.toSignificant(8)', priceLower.toSignificant(8))  
+  console.log('priceUpper.toSignificant(8)', priceUpper.toSignificant(8))  
+
+  return `${formatNumber(priceLower.toSignificant(8))} ${_token1.symbol} per ${
+    _token0.symbol
+  } to ${formatNumber(priceUpper.toSignificant(8))} ${_token1.symbol} per ${
+    _token0.symbol
   }`
 }
 

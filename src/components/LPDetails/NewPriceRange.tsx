@@ -78,7 +78,7 @@ function NewPriceRange({
     toggleSimRunning(false)
   }
 
-  const outOfRange = !poolData.positionInRange
+  // const outOfRange = !poolData.positionInRange
 
   return (
     <div className="flex flex-col pt-10">
@@ -100,10 +100,10 @@ function NewPriceRange({
               onBlur={onBlurLeft}
               value={state.leftPrice}
               required={true}
-              disabled={outOfRange ? true : false}
+              // disabled={outOfRange ? true : false}
             />
             <div className="text-xs text-gray-900 whitespace-nowrap dark:text-white mt-2">
-              {poolData.token0.symbol} per {poolData.token1.symbol}
+              {poolData.token1.symbol} per {poolData.token0.symbol}
             </div>
           </div>
           <div>
@@ -117,19 +117,20 @@ function NewPriceRange({
               placeholder=""
               onChange={rightPriceInputChange}
               onBlur={onBlurRight}
-              disabled={outOfRange ? true : false}
+              // disabled={outOfRange ? true : false}
             />
             <div className="text-xs text-gray-900 whitespace-nowrap dark:text-white mt-2">
-              {poolData.token0.symbol} per {poolData.token1.symbol}
+              {poolData.token1.symbol} per {poolData.token0.symbol}
             </div>
           </div>
           <div className="flex items-end flex-1 mb-6 cursor-pointer">
             <Button
               className="w-full"
               type="submit"
-              disabled={outOfRange ? true : false}
+              // disabled={outOfRange ? true : false}
             >
-              {outOfRange ? 'Out of Range Unsupported' : 'Simulate'}
+              Simulate
+              {/* {outOfRange ? 'Out of Range Unsupported' : 'Simulate'} */}
             </Button>
           </div>
         </form>

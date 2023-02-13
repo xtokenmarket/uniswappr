@@ -1,189 +1,134 @@
 /* eslint-disable */
-const { ethers, BigNumber } = require('ethers')
+const { ethers } = require('ethers')
+const Quoter = require('@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json')
 const ERC20 = require('../abis/erc20.json')
 const xtokenPositionManagerAbi = require('../abis/xtokenPositionManager.json')
-const uniswapV3PositionManagerAbi = require('../abis/uniswapV3PositionManager.json')
-const {
-  XTOKEN_POSITION_MANAGER,
-  UNISWAP_V3_POSITION_MANAGER,
-} = require('./constants')
+const { XTOKEN_POSITION_MANAGER } = require('./constants')
+const { tryParseTick } = require('./parse')
 
-export const getSwapParams = async (signerOrProvider, currentPositionId, newTickLower, newTickUpper) => {
+export const getSwapParams = async (
+  signerOrProvider,
+  currentPositionId,
+  newTickLower,
+  newTickUpper,
+  poolFee
+) => {
   const xtokenPositionManager = new ethers.Contract(
     XTOKEN_POSITION_MANAGER,
     xtokenPositionManagerAbi,
     signerOrProvider
   )
+
   const tokens = await xtokenPositionManager.getTokens(currentPositionId)
   let token0 = tokens.token0
   let token1 = tokens.token1
   token0 = new ethers.Contract(token0, ERC20, signerOrProvider)
   token1 = new ethers.Contract(token1, ERC20, signerOrProvider)
-
   const token0Decimals = await token0.decimals.call()
   const token1Decimals = await token1.decimals.call()
 
-//   const newTickLower = '128080'
-//   const newTickUpper = '328080'
+  const poolPrice = await xtokenPositionManager.getPoolPrice(currentPositionId)
 
-  const currentPoolPrice = await xtokenPositionManager.getPoolPrice(
-    currentPositionId
+  // exchanging 1 token0 for x token1
+  const quote = await getQuote(
+    signerOrProvider,
+    token0.address,
+    token1.address,
+    poolFee,
+    10 ** token0Decimals
   )
+
   const currentDeposited = await xtokenPositionManager.getStakedTokenBalance(
     currentPositionId
   )
-  console.log(
-    'currentDeposited.amount0Minted',
-    currentDeposited.amount0.toString()
-  )
-  console.log(
-    'currentDeposited.amount1Minted',
-    currentDeposited.amount1.toString()
-  )
-  const newRatioDetails = await getNewPositionRatioDetails(
-    xtokenPositionManager,
-    currentPoolPrice,
-    newTickLower,
-    newTickUpper,
-    currentDeposited,
-    token0Decimals,
-    token1Decimals
-  )
 
-  const res = await getAmountAndTokenToSwap(
-    newRatioDetails,
-    currentDeposited,
-    token0Decimals,
-    token1Decimals
-  )
-  return res
-}
+  /* 
+   Current Situation
+  */
+  // valueDepositedToken0InToken1Terms
+  const valueDepositedToken0 = bn(currentDeposited.amount0)
+    .mul(bn(quote))
+    .div(bn(10).pow(token0Decimals))
 
-async function getAmountAndTokenToSwap(
-  newRatioDetails,
-  currentDeposited,
-  token0Decimals,
-  token1Decimals
-) {
-  const [currentDeposited0Normalized, currentDeposited1Normalized] =
-    getNormalizedAmounts(
-      [currentDeposited.amount0, currentDeposited.amount1],
-      [token0Decimals, token1Decimals]
+  const valueDepositedToken1 = currentDeposited.amount1
+  const totalValueInToken1Terms = valueDepositedToken0.add(
+    bn(valueDepositedToken1)
+  )
+  const currentToken0ValueShare =
+    Number(valueDepositedToken0) / Number(totalValueInToken1Terms)
+
+  /* 
+   Target Situation
+  */
+  const lowerPrice = await xtokenPositionManager.getPriceFromTick(newTickLower)
+  const higherPrice = await xtokenPositionManager.getPriceFromTick(newTickUpper)
+  const pseudoDepositedTarget =
+    await xtokenPositionManager.calculatePoolMintedAmounts(
+      String(10 ** token0Decimals),
+      String(10 ** token1Decimals),
+      poolPrice,
+      lowerPrice,
+      higherPrice
     )
-  console.log(
-    'currentDeposited0Normalized',
-    currentDeposited0Normalized.toString()
+  const pseudoValueDepositedToken0 = bn(pseudoDepositedTarget.amount0Minted)
+    .mul(bn(quote))
+    .div(bn(10).pow(token0Decimals))
+  const pseudoValueDepositedToken1 = pseudoDepositedTarget.amount1Minted
+  const pseuooTotalValueInToken1Terms = pseudoValueDepositedToken0.add(
+    bn(pseudoValueDepositedToken1)
   )
-  console.log(
-    'currentDeposited1Normalized',
-    currentDeposited1Normalized.toString()
-  )
-
-  const { largerAmount, targetRatio } = newRatioDetails
+  const targetToken0ValueShare =
+    Number(pseudoValueDepositedToken0) / Number(pseuooTotalValueInToken1Terms)
+  console.log('targetToken0ValueShare', targetToken0ValueShare)
 
   let tokenToSwap, tokenAmountToSwap
-  if (largerAmount == 0) {
-    // token0Normalized > token1Normalized
-    const currentRatio = currentDeposited0Normalized.div(
-      currentDeposited1Normalized
+  if (targetToken0ValueShare > currentToken0ValueShare) {
+    // swap token1 for more token0
+    tokenToSwap = 'token1'
+    tokenAmountToSwap = Math.trunc(
+      (targetToken0ValueShare - currentToken0ValueShare) *
+        Number(currentDeposited.amount1)
     )
-    console.log('****')
-    console.log('currentRatio', currentRatio.toString())
-    console.log('targetRatio', targetRatio.toString())
-
-    if (currentRatio.gt(targetRatio)) {
-      //
-    } else {
-      // need more token0
-      // swap token1 for token0
-      tokenToSwap = 'token1'
-      tokenAmountToSwap = targetRatio
-        .sub(currentRatio)
-        .mul(currentDeposited1Normalized)
-        .div(targetRatio)
-        .div(2)
-      console.log('tokenAmountToSwap', tokenAmountToSwap.toString())
-      
-      // denormalize
-      tokenAmountToSwap = tokenAmountToSwap.mul(BigNumber.from(10).pow(token1Decimals)).div(BigNumber.from(10).pow(18))
-      console.log('tokenAmountToSwap', tokenAmountToSwap.toString())
-    }
   } else {
-    // todo
+    //
+    tokenToSwap = 'token0'
+    tokenAmountToSwap =
+      Math.trunc((1 - targetToken0ValueShare - (1 - currentToken0ValueShare)) *
+      Number(currentDeposited.amount0))
   }
-
+  console.log('tokenToSwap', tokenToSwap)
+  console.log('tokenAmountToSwap', tokenAmountToSwap)
   return {
-    tokenToSwap,
     tokenAmountToSwap,
+    tokenToSwap,
   }
 }
 
-function getNormalizedAmounts(tokenAmounts, tokenDecimals) {
-  const token0AmountNormalized = tokenAmounts[0]
-    .mul(BigNumber.from(10).pow(18))
-    .div(BigNumber.from(10).pow(tokenDecimals[0]))
-  const token1AmountNormalized = tokenAmounts[1]
-    .mul(BigNumber.from(10).pow(18))
-    .div(BigNumber.from(10).pow(tokenDecimals[1]))
-  return [token0AmountNormalized, token1AmountNormalized]
+function bn(amount) {
+  return ethers.BigNumber.from(amount)
 }
-
-async function getNewPositionRatioDetails(
-  positionManager,
-  poolPrice,
-  newTickLower,
-  newTickUpper,
-  currentDeposited,
-  token0Decimals,
-  token1Decimals
+//
+async function getQuote(
+  signerOrProvider,
+  tokenSwappedOut,
+  tokenReceivedIn,
+  poolFee,
+  swapAmount
 ) {
-  const lowerPrice = await positionManager.getPriceFromTick(newTickLower)
-  const higherPrice = await positionManager.getPriceFromTick(newTickUpper)
-
-  const pseudoMintedAmounts = await positionManager.calculatePoolMintedAmounts(
-    currentDeposited.amount0,
-    currentDeposited.amount1,
-    poolPrice,
-    lowerPrice,
-    higherPrice
-  )
-  console.log(
-    'pseudoMintedAmounts.amount0Minted',
-    pseudoMintedAmounts.amount0Minted.toString()
-  )
-  console.log(
-    'pseudoMintedAmounts.amount1Minted',
-    pseudoMintedAmounts.amount1Minted.toString()
-  )
-  const [pseudoToken0StakedNormalized, pseudoToken1StakedNormalized] =
-    getNormalizedAmounts(
-      [pseudoMintedAmounts.amount0Minted, pseudoMintedAmounts.amount1Minted],
-      [token0Decimals, token1Decimals]
-    )
-  console.log(
-    'pseudoToken0StakedNormalized',
-    pseudoToken0StakedNormalized.toString()
-  )
-  console.log(
-    'pseudoToken1StakedNormalized',
-    pseudoToken1StakedNormalized.toString()
+  const quoterContract = new ethers.Contract(
+    '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6', // quoter contract
+    Quoter.abi,
+    signerOrProvider
   )
 
-  let largerAmount = 0
-  let targetRatio
-  if (pseudoToken0StakedNormalized.eq(0)) {
-    // todo
-  } else if (pseudoToken1StakedNormalized.eq(0)) {
-    // todo
-  } else if (pseudoToken0StakedNormalized.gt(pseudoToken1StakedNormalized)) {
-    targetRatio = pseudoToken0StakedNormalized.div(pseudoToken1StakedNormalized)
-  } else {
-    targetRatio = pseudoToken1StakedNormalized.div(pseudoToken0StakedNormalized)
-    largerAmount = 1
-  }
+  // quotedAmountIn: amountReceived
+  const quotedAmountIn = await quoterContract.callStatic.quoteExactInputSingle(
+    tokenSwappedOut,
+    tokenReceivedIn,
+    poolFee,
+    swapAmount,
+    0
+  )
 
-  return {
-    largerAmount,
-    targetRatio,
-  }
+  return quotedAmountIn
 }
