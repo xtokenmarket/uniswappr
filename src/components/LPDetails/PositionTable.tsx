@@ -11,7 +11,10 @@ function PositionTable({ selectedPosition }: any) {
     tickUpper,
     lowPrice,
     highPrice,
+    inverseLowPrice,
+    inverseHighPrice,
     priceRangeText,
+    inversePriceRangeText,
   } = selectedPosition
   return (
     <div className="flex flex-col mt-2">
@@ -23,7 +26,7 @@ function PositionTable({ selectedPosition }: any) {
             <Cell>Lower Tick</Cell>
             <Cell>Upper Tick</Cell>
             <Cell>{priceRangeText}</Cell>
-            <Cell>{priceRangeText}</Cell>
+            <Cell>{inversePriceRangeText}</Cell>
           </Row>
           <Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
             <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -39,10 +42,10 @@ function PositionTable({ selectedPosition }: any) {
               {tickUpper}
             </Cell>
             <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-              {String(lowPrice).slice(0, 7)}
+              {String(lowPrice).slice(0, 7)} - {String(highPrice).slice(0, 7)}
             </Cell>
             <Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-              {String(highPrice).slice(0, 7)}
+              {String(inverseLowPrice).slice(0, 7)} - {String(inverseHighPrice).slice(0, 7)}
             </Cell>
           </Row>
         </tbody>

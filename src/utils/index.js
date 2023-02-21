@@ -2,8 +2,6 @@ import { Token } from '@uniswap/sdk-core'
 import { tickToPrice } from '@uniswap/v3-sdk'
 
 const formatNumber = (price) => {
-  const priceInt = parseInt(price)
-  // const toFixed = priceInt >= 100 ? 0 : priceInt >= 1 ? 3 : 4
   return parseFloat(Number(price).toFixed(10))
 }
 
@@ -58,11 +56,6 @@ export const getPriceFromTicksFormatted = (
     _token1,
     chainId
   )
-  console.log('_token0.symbol', _token0.symbol)  
-  console.log('_token1.symbol', _token1.symbol)  
-  console.log('priceLower.toSignificant(8)', priceLower.toSignificant(8))  
-  console.log('priceUpper.toSignificant(8)', priceUpper.toSignificant(8))  
-
   return `${formatNumber(priceLower.toSignificant(8))} ${_token1.symbol} per ${
     _token0.symbol
   } to ${formatNumber(priceUpper.toSignificant(8))} ${_token1.symbol} per ${

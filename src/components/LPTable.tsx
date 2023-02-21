@@ -8,10 +8,10 @@ const TableHeader = () => {
   return (
     <Head>
       <HeadCell>ID</HeadCell>
-      <HeadCell>Token</HeadCell>
-      <HeadCell>Amount</HeadCell>
-      <HeadCell>Token</HeadCell>
-      <HeadCell>Amount</HeadCell>
+      <HeadCell>Token 0</HeadCell>
+      <HeadCell>Amount 0</HeadCell>
+      <HeadCell>Token 1</HeadCell>
+      <HeadCell>Amount 1</HeadCell>
       <HeadCell>Fee Tier</HeadCell>
       <HeadCell>In Range</HeadCell>
     </Head>

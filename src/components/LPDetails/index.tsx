@@ -11,6 +11,7 @@ function LPDetails({ selectedPosition }: any) {
   const [projectedActions, setProjectedActions] = useState([])
   const [simRunning, toggleSimRunning] = useState(false)
   const [repositionParams, setRepositionParams] = useState({})
+  const [simTimestamp, setSimTimestamp] = useState(0)
 
   const { positionId, poolData } = selectedPosition
 
@@ -18,12 +19,8 @@ function LPDetails({ selectedPosition }: any) {
 
   const runReposition = async(e: any) => {
     e.preventDefault()
-    // todo: run approval first, trigger second tx on confirmation
    
-    console.log('repositioning')
     const tx = await reposition(signer, repositionParams)
-    console.log('repositioned')
-    // tx = await tx.wait()
 
     // todo: confirmed state
   }
@@ -37,12 +34,15 @@ function LPDetails({ selectedPosition }: any) {
         setProjectedActions={setProjectedActions}
         toggleSimRunning={toggleSimRunning}
         setRepositionParams={setRepositionParams}
+        setSimTimestamp={setSimTimestamp}
+        simTimestamp={simTimestamp}
       />
       {showProjectedActions && (
         <ProjectedActions
           projectedActions={projectedActions}
           simRunning={simRunning}
           runReposition={runReposition}
+          simTimestamp={simTimestamp}
         />
       )}
     </div>

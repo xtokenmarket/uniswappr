@@ -11,6 +11,8 @@ function NewPriceRange({
   setProjectedActions,
   toggleSimRunning,
   setRepositionParams,
+  setSimTimestamp,
+  simTimestamp
 }: any) {
   const { data: signer } = useSigner()
 
@@ -63,6 +65,7 @@ function NewPriceRange({
 
   const runRepositionSim = async (e: any) => {
     e.preventDefault()
+
     toggleSimRunning(true)
     const { projectedActions, repositionParams } = await repositionSim(
       signer,
@@ -73,12 +76,14 @@ function NewPriceRange({
         newTickUpper: state.rightTick,
       }
     )
+
+    const currentTimestamp = new Date().valueOf()
+    setSimTimestamp(currentTimestamp)
+
     setProjectedActions(projectedActions)
     setRepositionParams(repositionParams)
     toggleSimRunning(false)
   }
-
-  // const outOfRange = !poolData.positionInRange
 
   return (
     <div className="flex flex-col pt-10">
@@ -100,7 +105,6 @@ function NewPriceRange({
               onBlur={onBlurLeft}
               value={state.leftPrice}
               required={true}
-              // disabled={outOfRange ? true : false}
             />
             <div className="text-xs text-gray-900 whitespace-nowrap dark:text-white mt-2">
               {poolData.token1.symbol} per {poolData.token0.symbol}
@@ -117,20 +121,14 @@ function NewPriceRange({
               placeholder=""
               onChange={rightPriceInputChange}
               onBlur={onBlurRight}
-              // disabled={outOfRange ? true : false}
             />
             <div className="text-xs text-gray-900 whitespace-nowrap dark:text-white mt-2">
               {poolData.token1.symbol} per {poolData.token0.symbol}
             </div>
           </div>
           <div className="flex items-end flex-1 mb-6 cursor-pointer">
-            <Button
-              className="w-full"
-              type="submit"
-              // disabled={outOfRange ? true : false}
-            >
+            <Button className="w-full" type="submit">
               Simulate
-              {/* {outOfRange ? 'Out of Range Unsupported' : 'Simulate'} */}
             </Button>
           </div>
         </form>

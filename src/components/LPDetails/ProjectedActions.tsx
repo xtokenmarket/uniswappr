@@ -28,7 +28,12 @@ const ProjectedItem = ({ lineItem }: any) => {
   )
 }
 
-const ProjectedActions = ({ projectedActions, simRunning, runReposition }: any) => {
+const ProjectedActions = ({
+  projectedActions,
+  simRunning,
+  runReposition,
+  simTimestamp
+}: any) => {
   return (
     <div className="flex flex-col pt-10">
       <Card href="#">
@@ -40,21 +45,30 @@ const ProjectedActions = ({ projectedActions, simRunning, runReposition }: any) 
             <Spinner size="xl" aria-label="Simulating..." />
           </div>
         )}
-        <ul className="space-y-1 text-gray-500 list-inside dark:text-gray-400">
-          {projectedActions.map((p: any, i: number) => {
-            return <ProjectedItem lineItem={p} key={i} />
-          })}
-        </ul>
-        <div className="flex flex-wrap">
-          <div className="w-[62%] mr-[3%]">
-            <Button className="w-[100%]" onClick={runReposition}>Reposition</Button>
-          </div>
-          <div className="w-[35%]">
-            <Button variant={EButtonVariant.secondary} className={'w-[100%]'}>
-              Cancel
-            </Button>
-          </div>
-        </div>
+        {!simRunning && (
+          <>
+            <ul className="space-y-1 text-gray-500 list-inside dark:text-gray-400">
+              {projectedActions.map((p: any, i: number) => {
+                return <ProjectedItem lineItem={p} key={i} />
+              })}
+            </ul>
+            <div className="flex flex-wrap">
+              <div className="w-[62%] mr-[3%]">
+                <Button className="w-[100%]" onClick={runReposition}>
+                  Reposition
+                </Button>
+              </div>
+              <div className="w-[35%]">
+                <Button
+                  variant={EButtonVariant.secondary}
+                  className={'w-[100%]'}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   )

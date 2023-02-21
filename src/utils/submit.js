@@ -24,12 +24,18 @@ export const reposition = async (signerOrProvider, repositionParams) => {
     signerOrProvider
   )
 
-  let approval = await uniPositionManager.approve(
-    XTOKEN_POSITION_MANAGER,
+  const approvedAddress = await uniPositionManager.getApproved(
     repositionParams.positionId
   )
-  approval = await approval.wait()
-  console.log('nft approved')
+
+  if (approvedAddress != XTOKEN_POSITION_MANAGER) {
+    let approval = await uniPositionManager.approve(
+      XTOKEN_POSITION_MANAGER,
+      repositionParams.positionId
+    )
+    approval = await approval.wait()
+    console.log('nft approved')
+  }
 
   let repositionTx = await xtokenPositionManager.reposition(repositionParams)
   repositionTx = await repositionTx.wait()
@@ -66,21 +72,27 @@ export const repositionSim = async (
     value: '0x0',
     data: unsignedApprovalTx.data,
   }
-  console.log('positionData', positionData)
-  console.log('repositionParams', repositionParams)
 
   const { positionId, newTickLower, newTickUpper } = repositionParams
   const { token0, token1 } = positionData
   const token0Decimals = token0.decimals
   const token1Decimals = token1.decimals
 
+  const MAX_UINT128 = BigNumber.from(2).pow(128).sub(1)
+  const collectableFees = await uniPositionManager.callStatic.collect({
+    tokenId: positionId,
+    recipient: signerOrProvider._address,
+    amount0Max: MAX_UINT128,
+    amount1Max: MAX_UINT128,
+  })
 
   const { tokenToSwap, tokenAmountToSwap } = await getSwapParams(
     signerOrProvider,
     positionId,
     newTickLower,
     newTickUpper,
-    positionData.poolFee
+    positionData.poolFee,
+    collectableFees
   )
 
   const fromToken = tokenToSwap === 'token0' ? token0.address : token1.address
@@ -125,7 +137,6 @@ export const repositionSim = async (
   }
 
   const resp = await axios.request(options)
-  console.log('resp', resp)
   const logs = resp.data.result[1].logs
 
   const collectEvents = logs.filter((l) => l.decoded?.eventName == 'Collect')

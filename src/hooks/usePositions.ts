@@ -121,8 +121,11 @@ export function usePositions(signerOrProvider: any) {
           const split = priceRange.split(' ')
           const lowPrice = Number(split[0])
           const highPrice = Number(split[5])
+          const inverseLowPrice = 1 / highPrice
+          const inverseHighPrice = 1 / lowPrice
 
-          const priceRangeText = `${token0Details.symbol} / ${token1Details.symbol}`
+          const priceRangeText = `${token1Details.symbol} per ${token0Details.symbol}`
+          const inversePriceRangeText = `${token0Details.symbol} per ${token1Details.symbol}`
 
           const positionDetails = {
             token0: {
@@ -140,7 +143,10 @@ export function usePositions(signerOrProvider: any) {
             positionId: positionIds[i],
             lowPrice,
             highPrice,
+            inverseLowPrice,
+            inverseHighPrice,
             priceRangeText,
+            inversePriceRangeText,
             poolData,
           }
 
