@@ -1,6 +1,7 @@
 import React from 'react'
 import { Card, Label, Table, TextInput, Spinner } from 'flowbite-react'
 import Button, { EButtonVariant } from '../Button'
+import { useTimer } from '../../hooks/useTimer'
 
 const CheckIcon = () => {
   return (
@@ -32,14 +33,21 @@ const ProjectedActions = ({
   projectedActions,
   simRunning,
   runReposition,
-  simTimestamp
+  simTimestamp,
+  reset
 }: any) => {
+  const timeSinceSim = useTimer(simTimestamp)
+  const simStale = timeSinceSim < 60 ? false : true
+  const timeSinceSimTextColor = simStale ? 'text-red-500' : 'text-green-500'
   return (
     <div className="flex flex-col pt-10">
       <Card href="#">
-        <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-          Projected actions
-        </h5>
+        <div className="flex justify-between">
+          <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Projected actions
+          </h5>
+          <div className={timeSinceSimTextColor}>{timeSinceSim}s since sim</div>
+        </div>
         {simRunning && (
           <div className="text-center">
             <Spinner size="xl" aria-label="Simulating..." />
@@ -54,14 +62,15 @@ const ProjectedActions = ({
             </ul>
             <div className="flex flex-wrap">
               <div className="w-[62%] mr-[3%]">
-                <Button className="w-[100%]" onClick={runReposition}>
-                  Reposition
+                <Button className="w-[100%]" onClick={runReposition} disabled={simStale}>
+                  {simStale ? 'Re-run stale simulation' : 'Reposition'}
                 </Button>
               </div>
               <div className="w-[35%]">
                 <Button
                   variant={EButtonVariant.secondary}
                   className={'w-[100%]'}
+                  onClick={reset}
                 >
                   Cancel
                 </Button>

@@ -5,7 +5,7 @@ import NewPriceRange from './NewPriceRange'
 import PositionTable from './PositionTable'
 import { reposition } from '../../utils/submit'
 
-function LPDetails({ selectedPosition }: any) {
+function LPDetails({ selectedPosition, resetSelected }: any) {
   const { data: signer } = useSigner()
 
   const [projectedActions, setProjectedActions] = useState([])
@@ -16,6 +16,14 @@ function LPDetails({ selectedPosition }: any) {
   const { positionId, poolData } = selectedPosition
 
   const showProjectedActions = simRunning || projectedActions.length > 0
+
+  const reset = (e: any) => {
+    e.preventDefault()
+    resetSelected()
+    setProjectedActions([])
+    setRepositionParams({})
+    setSimTimestamp(0)
+  }
 
   const runReposition = async(e: any) => {
     e.preventDefault()
@@ -43,6 +51,7 @@ function LPDetails({ selectedPosition }: any) {
           simRunning={simRunning}
           runReposition={runReposition}
           simTimestamp={simTimestamp}
+          reset={reset}
         />
       )}
     </div>

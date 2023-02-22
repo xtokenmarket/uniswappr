@@ -5,11 +5,17 @@ import LPDetails from '../components/LPDetails'
 
 const MainPage = ({ positions }: any) => {
   const [selected, toggleSelected] = useState<any>(null) // should be idx
-  const [selectedIdx, toggleSelectedIdx] = useState<number>()
+  // const [selectedIdx, toggleSelectedIdx] = useState()
+  const [selectedIdx, toggleSelectedIdx] = useState<number | null>()
 
   const select = (idx: number) => {
     toggleSelected(positions[idx])
     toggleSelectedIdx(idx)
+  }
+
+  const resetSelected = () => {
+    toggleSelected(null)
+    toggleSelectedIdx(null)
   }
 
   return (
@@ -29,7 +35,7 @@ const MainPage = ({ positions }: any) => {
 
         <div className="flex flex-col flex-1 mt-10 w-[850px]">
           {selected != null ? (
-            <LPDetails selectedPosition={selected} />
+            <LPDetails selectedPosition={selected} resetSelected={resetSelected}/>
           ) : (
             <>
               <p className="text-xl font-extrabold">Select a position</p>
