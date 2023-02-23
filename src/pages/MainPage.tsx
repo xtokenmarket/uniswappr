@@ -4,8 +4,7 @@ import LPDetails from '../components/LPDetails'
 
 
 const MainPage = ({ positions }: any) => {
-  const [selected, toggleSelected] = useState<any>(null) // should be idx
-  // const [selectedIdx, toggleSelectedIdx] = useState()
+  const [selected, toggleSelected] = useState<any>(null)
   const [selectedIdx, toggleSelectedIdx] = useState<number | null>()
 
   const select = (idx: number) => {

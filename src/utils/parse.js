@@ -1,14 +1,13 @@
 /* eslint-disable */
 const {
   encodeSqrtRatioX96,
-  // FeeAmount,
   nearestUsableTick,
   priceToClosestTick,
   TICK_SPACINGS,
 } = require('@uniswap/v3-sdk/dist/')
-const { TickMath, tickToPrice } = require('@uniswap/v3-sdk')
+const { TickMath } = require('@uniswap/v3-sdk')
 const JSBI = require('jsbi')
-const { Currency, CurrencyAmount, Price, Token } = require('@uniswap/sdk-core')
+const { Price } = require('@uniswap/sdk-core')
 
 export function tryParseTick(baseToken, quoteToken, feeAmount, value) {
   if (!baseToken || !quoteToken || !feeAmount || !value) {
@@ -19,11 +18,8 @@ export function tryParseTick(baseToken, quoteToken, feeAmount, value) {
     ? [baseToken, quoteToken]
     : [quoteToken, baseToken]
 
-  const invertPrice = Boolean(baseToken && token0 && !baseToken.equals(token0))
-  // console.log('invertPrice', invertPrice)
-
   const price = tryParsePrice(token0, token1, value)
-  
+
   if (!price) {
     return undefined
   }

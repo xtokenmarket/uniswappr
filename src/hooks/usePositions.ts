@@ -10,6 +10,7 @@ import { getPriceRange } from '../utils'
 const {
   UNISWAP_V3_POSITION_MANAGER,
   XTOKEN_POSITION_MANAGER,
+  SUPPORTED_NETWORK_IDS
 } = require('../utils/constants')
 
 export function usePositions(signerOrProvider: any) {
@@ -118,11 +119,13 @@ export function usePositions(signerOrProvider: any) {
           }
 
           const priceRange = getPriceRange(poolData)
+          const isZeroInf = priceRange === '0 to INF' ? true : false
+          console.log('priceRange', priceRange)
           const split = priceRange.split(' ')
-          const lowPrice = Number(split[0])
-          const highPrice = Number(split[5])
-          const inverseLowPrice = 1 / highPrice
-          const inverseHighPrice = 1 / lowPrice
+          const lowPrice = isZeroInf ? '0' : Number(split[0])
+          const highPrice = isZeroInf ? '∞' : Number(split[5])
+          const inverseLowPrice = isZeroInf ? '0' : 1 / Number(highPrice)
+          const inverseHighPrice = isZeroInf ? '∞' : 1 / Number(lowPrice)
 
           const priceRangeText = `${token1Details.symbol} per ${token0Details.symbol}`
           const inversePriceRangeText = `${token0Details.symbol} per ${token1Details.symbol}`

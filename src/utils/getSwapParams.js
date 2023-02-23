@@ -4,7 +4,6 @@ const Quoter = require('@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.so
 const ERC20 = require('../abis/erc20.json')
 const xtokenPositionManagerAbi = require('../abis/xtokenPositionManager.json')
 const { XTOKEN_POSITION_MANAGER } = require('./constants')
-const { tryParseTick } = require('./parse')
 
 export const getSwapParams = async (
   signerOrProvider,
@@ -47,12 +46,18 @@ export const getSwapParams = async (
    Current Situation
   */
   // valueDepositedToken0InToken1Terms
-  const currentToken0Deposits = bn(currentDeposited.amount0).add(bn(collectableFees.amount0))
+  const currentToken0Deposits = bn(currentDeposited.amount0).add(
+    bn(collectableFees.amount0)
+  )
+  console.log('currentToken0Deposits', currentToken0Deposits)
   const valueDepositedToken0 = bn(currentToken0Deposits)
-    .mul(bn(quote))
-    .div(bn(10).pow(token0Decimals))
+  .mul(bn(quote))
+  .div(bn(10).pow(token0Decimals))
+  console.log('valueDepositedToken0', valueDepositedToken0)
 
-  const valueDepositedToken1 = (currentDeposited.amount1).add(collectableFees.amount1)
+  const valueDepositedToken1 = currentDeposited.amount1.add(
+    collectableFees.amount1
+  )
   const totalValueInToken1Terms = valueDepositedToken0.add(
     bn(valueDepositedToken1)
   )
@@ -81,8 +86,6 @@ export const getSwapParams = async (
   )
   const targetToken0ValueShare =
     Number(pseudoValueDepositedToken0) / Number(pseuooTotalValueInToken1Terms)
-  console.log('currentToken0ValueShare', currentToken0ValueShare)
-  console.log('targetToken0ValueShare', targetToken0ValueShare)
 
   let tokenToSwap, tokenAmountToSwap
   if (targetToken0ValueShare == 0) {
@@ -107,8 +110,7 @@ export const getSwapParams = async (
     )
     tokenToSwap = 'token0'
   }
-  console.log('tokenToSwap', tokenToSwap)
-  console.log('tokenAmountToSwap', tokenAmountToSwap)
+
   return {
     tokenAmountToSwap,
     tokenToSwap,
@@ -132,7 +134,6 @@ async function getQuote(
     signerOrProvider
   )
 
-  // quotedAmountIn: amountReceived
   const quotedAmountIn = await quoterContract.callStatic.quoteExactInputSingle(
     tokenSwappedOut,
     tokenReceivedIn,

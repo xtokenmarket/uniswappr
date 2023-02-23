@@ -1,8 +1,6 @@
 /* eslint-disable */
 const { ethers, BigNumber } = require('ethers')
 const axios = require('axios')
-const { Network, Alchemy } = require('alchemy-sdk')
-const { tickToPrice } = require('@uniswap/v3-sdk')
 const xtokenPositionManagerAbi = require('../abis/xtokenPositionManager.json')
 const uniswapV3PositionManagerAbi = require('../abis/uniswapV3PositionManager.json')
 const {
@@ -213,19 +211,21 @@ export const repositionSim = async (
   ]
 
   const unformattedNewStakedAmounts = getNewStakedAmountsUnformatted(mintEvent)
-
+  console.log('unformattedNewStakedAmounts', unformattedNewStakedAmounts)
+  
   const fullRepositionParams = {
     positionId: Number(positionId),
     newTickLower: Number(newTickLower),
     newTickUpper: Number(newTickUpper),
     minAmount0Staked: BigNumber.from(unformattedNewStakedAmounts.token0Staked)
-      .mul(99)
-      .div(100),
+    .mul(99)
+    .div(100),
     minAmount1Staked: BigNumber.from(unformattedNewStakedAmounts.token1Staked)
-      .mul(99)
-      .div(100),
+    .mul(99)
+    .div(100),
     oneInchData,
   }
+  console.log('fullRepositionParams', fullRepositionParams)
 
   return {
     feeAmountsCollected,

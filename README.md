@@ -1,10 +1,31 @@
-# UniSwapper
+# UniSwappr
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+UniSwappr provides Uniswap V3 liquidity providers with the ability to reposition liquidity quickly, easily and precisely. LPs can fine-tune their repositioning parameters via our simulation interface and then execute their strategy in a few clicks.
 
+UniSwappr is an experimental product and the smart contract has not been audited. While the contract does not take custody of user funds, it does process value during the atomic repositioning transaction. As such, we recommend only using Uniswappr for smaller liquidity positions as we battle-test it.
 
-[ { "positionId": 657916}, { "newTickLower": -69060}, { "newTickUpper": -62160 }, {"minAmount0Staked": 0}, {"minAmount1Staked": 0}, {"oneInchData": "0x7c025200000000000000000000000000b97cd69145e5a9357b2acd6af6c5076380f17afb000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000001800000000000000000000000007ceb23fd6bc0add59e62ac25578270cff1b9f6190000000000000000000000000d500b1d8e8ef31e21c99d1db9a6444d3adf1270000000000000000000000000adbf1854e5883eb8aa7baf50705338739e558e5b000000000000000000000000dce16ad5cfba50203766f270d69115c265d2687d00000000000000000000000000000000000000000000000000055bbc68a9a2c20000000000000000000000000000000000000000000000000ef8b5a83e5ab42400000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a500000000000000000000000000000000000000000000000000000000006700206ae4071138002dc6c0adbf1854e5883eb8aa7baf50705338739e558e5b1111111254fb6c44bac0bed2854e76f90643097d0000000000000000000000000000000000000000000000000ef8b5a83e5ab4247ceb23fd6bc0add59e62ac25578270cff1b9f61900000000000000000000000000000000000000000000000000055bbc68a9a2c2000000000000000000000000000000000000000000000000000000cfee7c08"} ]
+For now, the Uniswappr contract is deployed on Optimism, Arbitrum and Polygon at address `[INSERT]`. 
 
+## How Does it Work
+UniSwappr is a combination of a smart contract, off-chain scripts and an easy-to-use, intuitive front-end. 
 
-allowance: 1561406767933531146
-           2165636225538733231
+The smart contract[ADD LINK]:
+- removes liquidity from the old liquidity NFT position
+- collect any unclaimed fees from the old position
+- swaps from one token to another if necessary to accommodate new NFT position
+- deposits liquidity into new position
+- returns any remaining undeposited dust in the two tokens
+
+The off-chain scripts:
+- calculate the current ratio of deposited assets in equivalent terms
+- calculate the target ratio of deposited assets in equivalent terms for the new position
+- calculate the swap token and swap amount for the rebalance
+- simulate the atomic transaction via the Alchemy simulation API
+- parse the simulation results to return a digest of the asset changes
+
+The frontend:
+- queries for the user's open NFT liquidity positions
+- renders important data on each position, including ticks, equivalent prices, deposited balances, etc.
+- accepts a new price range denominated in the ratio between the assets (prices are converted to price ticks behind the scenes)
+- produces a simulation of the reposition transaction
+- executes the (NFT) approval and reposition transactions

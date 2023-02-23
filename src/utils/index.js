@@ -24,7 +24,7 @@ export const getPriceRange = (poolData) => {
       numberTick0 == -887200 &&
       numberTick1 === 887200)
   ) {
-    return '0 to infinity'
+    return '0 to INF'
   }
 
   const { priceLower, priceUpper } = getPriceFromTicks(
