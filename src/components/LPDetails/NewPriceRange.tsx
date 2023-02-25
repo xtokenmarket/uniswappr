@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useSigner } from 'wagmi'
+import { getNetwork } from '@wagmi/core'
 import { Card, Label, Table, TextInput, Spinner } from 'flowbite-react'
 import Button, { EButtonVariant } from '../Button'
 import { tryParseTick } from '../../utils/parse'
@@ -12,9 +13,10 @@ function NewPriceRange({
   toggleSimRunning,
   setRepositionParams,
   setSimTimestamp,
-  simTimestamp
+  simTimestamp,
 }: any) {
   const { data: signer } = useSigner()
+  const { chain } = getNetwork()
 
   const [state, setState] = useState({
     leftPrice: '',
@@ -64,12 +66,14 @@ function NewPriceRange({
   }
 
   const runRepositionSim = async (e: any) => {
+    if (!chain) return
     e.preventDefault()
 
     toggleSimRunning(true)
     const { projectedActions, repositionParams } = await repositionSim(
       signer,
       poolData,
+      chain.id,
       {
         positionId: poolData.nftId,
         newTickLower: state.leftTick,

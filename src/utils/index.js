@@ -94,16 +94,32 @@ export const getPriceFromTicks = (
   }
 }
 
-export const showFeeTier = fee => {
-  if(fee === 10000) return '1%'
-  if(fee === 3000) return '0.3%'
-  if(fee === 500) return '0.05%'
-  if(fee === 100) return '0.01%'
+export const showFeeTier = (fee) => {
+  const mapping = {
+    10000: '1%',
+    3000: '0.3%',
+    500: '0.05%',
+    100: '0.01%',
+  }
+  return mapping[fee]
 }
 
-export const showNetworkName = chainId => {
-  if(chainId === 1)return 'Ethereum'
-  if(chainId === 10)return 'Optimism'
-  if(chainId === 137)return 'Polygon'
-  if(chainId === 42161)return 'Arbitrum'
+export const showNetworkName = (chainId) => {
+  const mapping = {
+    1: 'Ethereum',
+    10: 'Optimism',
+    137: 'Polygon',
+    42161: 'Arbitrum',
+  }
+  return mapping[chainId]
+}
+
+export const chainIdToAlchemyUrl = (chainId) => {
+  const mapping = {
+    1: 'mainnet',
+    10: 'opt-mainnet',
+    137: 'polygon-mainnet',
+    42161: 'arb-mainnet',
+  }
+  return mapping[chainId]
 }

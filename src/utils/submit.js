@@ -7,7 +7,7 @@ const {
   XTOKEN_POSITION_MANAGER,
   UNISWAP_V3_POSITION_MANAGER,
 } = require('./constants')
-const { getPriceFromTicksFormatted } = require('../utils')
+const { getPriceFromTicksFormatted, chainIdToAlchemyUrl } = require('../utils')
 const { getSwapParams } = require('./getSwapParams')
 
 export const reposition = async (signerOrProvider, repositionParams) => {
@@ -43,6 +43,7 @@ export const reposition = async (signerOrProvider, repositionParams) => {
 export const repositionSim = async (
   signerOrProvider,
   positionData,
+  chainId,
   repositionParams
 ) => {
   /* Simulation */
@@ -122,9 +123,11 @@ export const repositionSim = async (
     data: unsignedRepositionTx.data,
   }
 
+  const urlNetwork = chainIdToAlchemyUrl[chainId]
+
   const options = {
-    method: 'POST', // todo: make dynamic
-    url: `https://polygon-mainnet.g.alchemy.com/v2/${REACT_APP_ALCHEMY_API_KEY}`,
+    method: 'POST',
+    url: `https://${urlNetwork}.g.alchemy.com/v2/${REACT_APP_ALCHEMY_API_KEY}`,
     headers: { accept: 'application/json', 'content-type': 'application/json' },
     data: {
       id: 1,
