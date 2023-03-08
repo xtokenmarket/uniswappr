@@ -1,11 +1,14 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   chain,
   configureChains,
   createClient,
   useAccount,
   WagmiConfig,
+  useSigner,
+  useSwitchNetwork,
 } from 'wagmi'
+import { getNetwork } from '@wagmi/core'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 
@@ -15,8 +18,10 @@ import ConnectWalletPage from './pages/ConnectWalletPage'
 import MainPage from './pages/MainPage'
 import NoLpPositionsPage from './pages/NoLpPositionsPage'
 
+import { usePositions } from './hooks/usePositions'
+
 const { provider } = configureChains(
-  [chain.mainnet, chain.goerli],
+  [chain.polygon, chain.arbitrum, chain.optimism],
   [
     alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_API_KEY || '' }),
     publicProvider(),
@@ -28,29 +33,67 @@ const wagmiClient = createClient({
   provider,
 })
 
+const SUPPORTED_NETWORK_IDS = [10, 137, 42161]
+
 const Main = () => {
-  const { address, isConnected } = useAccount()
+  const { isConnected } = useAccount()
+  const { data: signer } = useSigner()
+  const { chain } = getNetwork()
+  const { chains, error, isLoading, pendingChainId, switchNetwork } =
+    useSwitchNetwork()
+  
+  // const network = useSwitchNetwork({
+  //   onSettled(data, error) {
+  //     console.log('Settled', { data, error })
+  //   },
+  // })
 
-  // @todo query the smart contract for this information
-  const hasLpPositions = Math.random() < 0.5
+  // useEffect(() => {
+  //   console.log('network changed')
+  // }, [chain])
+  
+  const [positions] = usePositions(signer)
+  const hasLpPositions = !!positions
 
-  const PageComponent = isConnected
-    ? hasLpPositions
-      ? MainPage
-      : NoLpPositionsPage
-    : ConnectWalletPage
+
+  const getPageComponent = () => {
+    if (isConnected) {
+      const supportedNetwork = SUPPORTED_NETWORK_IDS.includes(
+        chain ? chain.id : 1234
+      )
+      if (positions === undefined) {
+        return (
+          <div className="flex flex-col h-full px-12 pt-10 text-center">
+            <div className="flex flex-col mx-auto xl:flex-column">
+              <div className="w-[850px]">
+                {supportedNetwork
+                  ? 'Loading positions...'
+                  : 'Unsupported Network'}
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      if (hasLpPositions) {
+        return <MainPage positions={positions} />
+      } else {
+        return <NoLpPositionsPage />
+      }
+    }
+
+    return <ConnectWalletPage />
+  }
 
   return (
     <div className="relative flex flex-col w-full h-full bg-gray-50">
       <div className="mb-2.5">
         <Navbar />
       </div>
-      <div className="min-h-[750px] flex-1 mt-2.5 mb-2.5">
-        <PageComponent />
-      </div>
-      <div className="mt-2.5">
+      <div className="">{getPageComponent()}</div>
+      {/* <div className="mt-2.5">
         <Footer />
-      </div>
+      </div> */}
     </div>
   )
 }

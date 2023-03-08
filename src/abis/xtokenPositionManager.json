@@ -1,0 +1,416 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "contract INonfungiblePositionManager",
+        "name": "_nftManager",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IUniswapV3Factory",
+        "name": "_uniswapFactory",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "oldPositionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "newPositionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "int24",
+        "name": "oldLowerTick",
+        "type": "int24"
+      },
+      {
+        "indexed": false,
+        "internalType": "int24",
+        "name": "oldUpperTick",
+        "type": "int24"
+      },
+      {
+        "indexed": false,
+        "internalType": "int24",
+        "name": "newLowerTick",
+        "type": "int24"
+      },
+      {
+        "indexed": false,
+        "internalType": "int24",
+        "name": "newUpperTick",
+        "type": "int24"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newStakedToken0Balance",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newStakedToken1Balance",
+        "type": "uint256"
+      }
+    ],
+    "name": "Repositioned",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint8", "name": "inputAsset", "type": "uint8" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "calculateAmountsMintedSingleToken",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount0Minted", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1Minted", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" },
+      { "internalType": "uint160", "name": "poolPrice", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceLower", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceUpper", "type": "uint160" }
+    ],
+    "name": "calculatePoolMintedAmounts",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount0Minted", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1Minted", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint128", "name": "liquidity", "type": "uint128" },
+      { "internalType": "uint160", "name": "poolPrice", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceLower", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceUpper", "type": "uint160" }
+    ],
+    "name": "getAmountsForLiquidity",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint128", "name": "liquidity", "type": "uint128" },
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getAmountsForLiquidity",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getFee",
+    "outputs": [{ "internalType": "uint24", "name": "fee", "type": "uint24" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint160", "name": "priceLower", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceUpper", "type": "uint160" },
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" }
+    ],
+    "name": "getLiquidityForAmount0",
+    "outputs": [
+      { "internalType": "uint128", "name": "liquidity", "type": "uint128" }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint160", "name": "priceLower", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceUpper", "type": "uint160" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" }
+    ],
+    "name": "getLiquidityForAmount1",
+    "outputs": [
+      { "internalType": "uint128", "name": "liquidity", "type": "uint128" }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" },
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getLiquidityForAmounts",
+    "outputs": [
+      { "internalType": "uint128", "name": "liquidity", "type": "uint128" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" },
+      { "internalType": "uint160", "name": "poolPrice", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceLower", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceUpper", "type": "uint160" }
+    ],
+    "name": "getLiquidityForAmounts",
+    "outputs": [
+      { "internalType": "uint128", "name": "liquidity", "type": "uint128" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getPoolAddress",
+    "outputs": [
+      { "internalType": "address", "name": "pool", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getPoolLiquidity",
+    "outputs": [
+      { "internalType": "uint160", "name": "price", "type": "uint160" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_pool", "type": "address" }
+    ],
+    "name": "getPoolLiquidityFromAddress",
+    "outputs": [{ "internalType": "uint128", "name": "", "type": "uint128" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getPoolPrice",
+    "outputs": [
+      { "internalType": "uint160", "name": "price", "type": "uint160" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_pool", "type": "address" }
+    ],
+    "name": "getPoolPriceFromAddress",
+    "outputs": [
+      { "internalType": "uint160", "name": "price", "type": "uint160" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" },
+      { "internalType": "uint8", "name": "token0Decimals", "type": "uint8" },
+      { "internalType": "uint8", "name": "token1Decimals", "type": "uint8" }
+    ],
+    "name": "getPoolPriceWithDecimals",
+    "outputs": [
+      { "internalType": "uint256", "name": "price", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getPositionLiquidity",
+    "outputs": [
+      { "internalType": "uint128", "name": "liquidity", "type": "uint128" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getPositionParams",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "token0", "type": "address" },
+          { "internalType": "address", "name": "token1", "type": "address" },
+          { "internalType": "uint24", "name": "fee", "type": "uint24" },
+          { "internalType": "int24", "name": "tickLower", "type": "int24" },
+          { "internalType": "int24", "name": "tickUpper", "type": "int24" }
+        ],
+        "internalType": "struct UniswapPositionManager.PositionParams",
+        "name": "positionParams",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "int24", "name": "tick", "type": "int24" }],
+    "name": "getPriceFromTick",
+    "outputs": [{ "internalType": "uint160", "name": "", "type": "uint160" }],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getPriceRange",
+    "outputs": [
+      { "internalType": "uint160", "name": "priceLower", "type": "uint160" },
+      { "internalType": "uint160", "name": "priceUpper", "type": "uint160" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getStakedTokenBalance",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint160", "name": "price", "type": "uint160" }
+    ],
+    "name": "getTickFromPrice",
+    "outputs": [{ "internalType": "int24", "name": "", "type": "int24" }],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getTicks",
+    "outputs": [
+      { "internalType": "int24", "name": "tickLower", "type": "int24" },
+      { "internalType": "int24", "name": "tickUpper", "type": "int24" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "getTokens",
+    "outputs": [
+      { "internalType": "address", "name": "token0", "type": "address" },
+      { "internalType": "address", "name": "token1", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nftManager",
+    "outputs": [
+      {
+        "internalType": "contract INonfungiblePositionManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          { "internalType": "int24", "name": "newTickLower", "type": "int24" },
+          { "internalType": "int24", "name": "newTickUpper", "type": "int24" },
+          {
+            "internalType": "uint256",
+            "name": "minAmount0Staked",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minAmount1Staked",
+            "type": "uint256"
+          },
+          { "internalType": "bytes", "name": "oneInchData", "type": "bytes" }
+        ],
+        "internalType": "struct UniswapPositionManager.RepositionParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "reposition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "uniswapFactory",
+    "outputs": [
+      {
+        "internalType": "contract IUniswapV3Factory",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
