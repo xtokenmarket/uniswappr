@@ -7,7 +7,8 @@ const {
   XTOKEN_POSITION_MANAGER,
   UNISWAP_V3_POSITION_MANAGER,
 } = require('./constants')
-const { getPriceFromTicksFormatted, chainIdToAlchemyUrl } = require('../utils')
+const { getPriceFromTicksFormatted } = require('../utils')
+// const { getPriceFromTicksFormatted, chainIdToAlchemyUrl } = require('../utils')
 const { getSwapParams } = require('./getSwapParams')
 
 export const reposition = async (signerOrProvider, repositionParams) => {
@@ -123,11 +124,25 @@ export const repositionSim = async (
     data: unsignedRepositionTx.data,
   }
 
+  const chainIdToAlchemyUrl = (chainId) => {
+    console.log('chainId', chainId)
+    const mapping = {
+      1: 'mainnet',
+      10: 'opt-mainnet',
+      '137': 'polygon-mainnet',
+      42161: 'arb-mainnet',
+    }
+    return mapping[chainId]
+  }
+
   const urlNetwork = chainIdToAlchemyUrl[chainId]
+  console.log('chainId', chainId)
+  console.log('urlNetwork', urlNetwork)
 
   const options = {
     method: 'POST',
-    url: `https://${urlNetwork}.g.alchemy.com/v2/${REACT_APP_ALCHEMY_API_KEY}`,
+    url: `https://polygon-mainnet.g.alchemy.com/v2/${REACT_APP_ALCHEMY_API_KEY}`,
+    // url: `https://${urlNetwork}.g.alchemy.com/v2/${REACT_APP_ALCHEMY_API_KEY}`,
     headers: { accept: 'application/json', 'content-type': 'application/json' },
     data: {
       id: 1,
