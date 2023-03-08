@@ -28,14 +28,13 @@ export const getSwapParams = async (
   const token1Decimals = await token1.decimals.call()
 
   const poolPrice = await xtokenPositionManager.getPoolPrice(currentPositionId)
-
   // exchanging 1 token0 for x token1
   const quote = await getQuote(
     signerOrProvider,
     token0.address,
     token1.address,
     poolFee,
-    10 ** token0Decimals
+    String(10 ** token0Decimals)
   )
 
   const currentDeposited = await xtokenPositionManager.getStakedTokenBalance(

@@ -115,7 +115,9 @@ export const showNetworkName = (chainId) => {
 }
 
 export const chainIdToAlchemyUrl = (chainId) => {
-  console.log('chainId**', chainId)
+  if(chainId == 10) return 'opt-mainnet';
+  console.log('here')
+  if(chainId == '10') return 'opt-mainnet';
   const mapping = {
     1: 'mainnet',
     10: 'opt-mainnet',

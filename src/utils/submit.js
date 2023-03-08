@@ -7,8 +7,7 @@ const {
   XTOKEN_POSITION_MANAGER,
   UNISWAP_V3_POSITION_MANAGER,
 } = require('./constants')
-const { getPriceFromTicksFormatted } = require('../utils')
-// const { getPriceFromTicksFormatted, chainIdToAlchemyUrl } = require('../utils')
+const { getPriceFromTicksFormatted, chainIdToAlchemyUrl } = require('../utils')
 const { getSwapParams } = require('./getSwapParams')
 
 export const reposition = async (signerOrProvider, repositionParams) => {
@@ -124,19 +123,18 @@ export const repositionSim = async (
     data: unsignedRepositionTx.data,
   }
 
-  const chainIdToAlchemyUrl = (chainId) => {
-    console.log('chainId', chainId)
-    const mapping = {
-      1: 'mainnet',
-      10: 'opt-mainnet',
-      '137': 'polygon-mainnet',
-      42161: 'arb-mainnet',
-    }
-    return mapping[chainId]
-  }
+  // const chainIdToAlchemyUrl = (chainId) => {
+  //   console.log('chainId', chainId)
+  //   const mapping = {
+  //     1: 'mainnet',
+  //     '10': 'opt-mainnet',
+  //     '137': 'polygon-mainnet',
+  //     42161: 'arb-mainnet',
+  //   }
+  //   return mapping[chainId]
+  // }
 
-  const urlNetwork = chainIdToAlchemyUrl[chainId]
-  console.log('chainId', chainId)
+  const urlNetwork = chainIdToAlchemyUrl(chainId)
   console.log('urlNetwork', urlNetwork)
 
   const options = {
