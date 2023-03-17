@@ -84,6 +84,7 @@ export const repositionSim = async (
     amount0Max: MAX_UINT128,
     amount1Max: MAX_UINT128,
   })
+  console.log('collectableFees', collectableFees)
 
   const { tokenToSwap, tokenAmountToSwap } = await getSwapParams(
     signerOrProvider,
@@ -93,6 +94,8 @@ export const repositionSim = async (
     positionData.poolFee,
     collectableFees
   )
+  console.log('tokenToSwap', tokenToSwap)
+  console.log('tokenAmountToSwap', tokenAmountToSwap)
 
   const fromToken = tokenToSwap === 'token0' ? token0.address : token1.address
   const toToken = tokenToSwap === 'token0' ? token1.address : token0.address
@@ -104,6 +107,9 @@ export const repositionSim = async (
     fromToken,
     toToken
   )
+  console.log('oneInchData', oneInchData)
+  console.log('newTickLower', newTickLower)
+  console.log('newTickUpper', newTickUpper)
 
   let params = {
     positionId,
@@ -123,24 +129,11 @@ export const repositionSim = async (
     data: unsignedRepositionTx.data,
   }
 
-  // const chainIdToAlchemyUrl = (chainId) => {
-  //   console.log('chainId', chainId)
-  //   const mapping = {
-  //     1: 'mainnet',
-  //     '10': 'opt-mainnet',
-  //     '137': 'polygon-mainnet',
-  //     42161: 'arb-mainnet',
-  //   }
-  //   return mapping[chainId]
-  // }
-
   const urlNetwork = chainIdToAlchemyUrl(chainId)
-  console.log('urlNetwork', urlNetwork)
 
   const options = {
     method: 'POST',
-    url: `https://polygon-mainnet.g.alchemy.com/v2/${REACT_APP_ALCHEMY_API_KEY}`,
-    // url: `https://${urlNetwork}.g.alchemy.com/v2/${REACT_APP_ALCHEMY_API_KEY}`,
+    url: `https://${urlNetwork}.g.alchemy.com/v2/${REACT_APP_ALCHEMY_API_KEY}`,
     headers: { accept: 'application/json', 'content-type': 'application/json' },
     data: {
       id: 1,
@@ -152,6 +145,7 @@ export const repositionSim = async (
 
   const resp = await axios.request(options)
   const logs = resp.data.result[1].logs
+  console.log('logs', logs)
 
   const collectEvents = logs.filter((l) => l.decoded?.eventName == 'Collect')
   const decreaseEvents = logs.filter(
@@ -160,6 +154,7 @@ export const repositionSim = async (
   const swapEvent = logs.filter((l) => l.decoded?.eventName == 'Swap')
   const transferEvents = logs.filter((l) => l.decoded?.eventName == 'Transfer')
   const mintEvent = logs.filter((l) => l.decoded?.eventName == 'Mint')
+  const repositionEvent = logs.filter((l) => l.decoded?.eventName == 'Repositioned')
 
   const feeAmountsCollected = getCollectedFeeAmounts(
     collectEvents,
@@ -176,6 +171,7 @@ export const repositionSim = async (
 
   const newPositionData = getNewPositionData(
     mintEvent,
+    repositionEvent,
     token0,
     token1,
     signerOrProvider.provider._network.chainId
@@ -227,18 +223,16 @@ export const repositionSim = async (
   ]
 
   const unformattedNewStakedAmounts = getNewStakedAmountsUnformatted(mintEvent)
-  console.log('unformattedNewStakedAmounts', unformattedNewStakedAmounts)
-  
   const fullRepositionParams = {
     positionId: Number(positionId),
     newTickLower: Number(newTickLower),
     newTickUpper: Number(newTickUpper),
     minAmount0Staked: BigNumber.from(unformattedNewStakedAmounts.token0Staked)
-    .mul(99)
-    .div(100),
+      .mul(99)
+      .div(100),
     minAmount1Staked: BigNumber.from(unformattedNewStakedAmounts.token1Staked)
-    .mul(99)
-    .div(100),
+      .mul(99)
+      .div(100),
     oneInchData,
   }
   console.log('fullRepositionParams', fullRepositionParams)
@@ -263,8 +257,7 @@ export const getOneInchCalldata = async (
 ) => {
   let apiUrl = `https://api.1inch.exchange/v4.0/${networkId}/swap?fromTokenAddress=${fromToken}&toTokenAddress=${toToken}&amount=${swapAmount}&fromAddress=${lpSwapperAddress}&slippage=50&disableEstimate=true`
   let response = await axios.get(apiUrl)
-  let oneInchData = response.data.tx.data
-  return oneInchData
+  return response.data.tx.data
 }
 
 const getCollectedFeeAmounts = (
@@ -272,8 +265,13 @@ const getCollectedFeeAmounts = (
   token0Decimals,
   token1Decimals
 ) => {
-  const token0FeesCollected = collectEvents[0].decoded.inputs[4].value
-  const token1FeesCollected = collectEvents[0].decoded.inputs[5].value
+  console.log('collectEvents', collectEvents)
+  const token0FeesCollected = !!collectEvents[0].decoded.inputs[4]
+    ? collectEvents[0].decoded.inputs[4].value
+    : 0
+  const token1FeesCollected = !!collectEvents[0].decoded.inputs[5]
+    ? collectEvents[0].decoded.inputs[5].value
+    : 0
   return {
     token0Fees: Number.parseFloat(
       token0FeesCollected / 10 ** token0Decimals
@@ -314,10 +312,20 @@ const getNewStakedAmountsUnformatted = (mintEvent) => {
   }
 }
 
-const getNewPositionData = (mintEvent, token0, token1, chainId) => {
-  const inputs = mintEvent[0].decoded.inputs
-  const newLowerTick = inputs[1].value
-  const newUpperTick = inputs[2].value
+const getNewPositionData = (mintEvent, repositionEvent, token0, token1, chainId) => {
+  console.log('mintEvent', mintEvent)
+  console.log('repositionEvent', repositionEvent)
+  const mintInputs = mintEvent[0]?.decoded?.inputs
+  const repositionInputs = repositionEvent[0]?.decoded?.inputs
+
+  let newLowerTick, newUpperTick
+  if(!mintInputs){
+    newLowerTick = repositionInputs[4].value
+    newUpperTick = repositionInputs[5].value
+  } else {
+    newLowerTick = mintInputs[1].value
+    newUpperTick = mintInputs[2].value
+  }
 
   const prices = getPriceFromTicksFormatted(
     Number(newLowerTick),

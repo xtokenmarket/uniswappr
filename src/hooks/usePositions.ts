@@ -120,7 +120,6 @@ export function usePositions(signerOrProvider: any) {
 
           const priceRange = getPriceRange(poolData)
           const isZeroInf = priceRange === '0 to INF' ? true : false
-          console.log('priceRange', priceRange)
           const split = priceRange.split(' ')
           const lowPrice = isZeroInf ? '0' : Number(split[0])
           const highPrice = isZeroInf ? '∞' : Number(split[5])
