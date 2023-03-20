@@ -48,11 +48,9 @@ export const getSwapParams = async (
   const currentToken0Deposits = bn(currentDeposited.amount0).add(
     bn(collectableFees.amount0)
   )
-  console.log('currentToken0Deposits', currentToken0Deposits)
   const valueDepositedToken0 = bn(currentToken0Deposits)
   .mul(bn(quote))
   .div(bn(10).pow(token0Decimals))
-  console.log('valueDepositedToken0', valueDepositedToken0)
 
   const valueDepositedToken1 = currentDeposited.amount1.add(
     collectableFees.amount1

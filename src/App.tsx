@@ -42,16 +42,6 @@ const Main = () => {
   const { chains, error, isLoading, pendingChainId, switchNetwork } =
     useSwitchNetwork()
   
-  // const network = useSwitchNetwork({
-  //   onSettled(data, error) {
-  //     console.log('Settled', { data, error })
-  //   },
-  // })
-
-  // useEffect(() => {
-  //   console.log('network changed')
-  // }, [chain])
-  
   const [positions] = usePositions(signer)
   const hasLpPositions = !!positions
 
