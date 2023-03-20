@@ -313,8 +313,6 @@ const getNewStakedAmountsUnformatted = (mintEvent) => {
 }
 
 const getNewPositionData = (mintEvent, repositionEvent, token0, token1, chainId) => {
-  console.log('mintEvent', mintEvent)
-  console.log('repositionEvent', repositionEvent)
   const mintInputs = mintEvent[0]?.decoded?.inputs
   const repositionInputs = repositionEvent[0]?.decoded?.inputs
 
