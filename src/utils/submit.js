@@ -94,8 +94,6 @@ export const repositionSim = async (
     positionData.poolFee,
     collectableFees
   )
-  console.log('tokenToSwap', tokenToSwap)
-  console.log('tokenAmountToSwap', tokenAmountToSwap)
 
   const fromToken = tokenToSwap === 'token0' ? token0.address : token1.address
   const toToken = tokenToSwap === 'token0' ? token1.address : token0.address
@@ -107,9 +105,6 @@ export const repositionSim = async (
     fromToken,
     toToken
   )
-  console.log('oneInchData', oneInchData)
-  console.log('newTickLower', newTickLower)
-  console.log('newTickUpper', newTickUpper)
 
   let params = {
     positionId,
@@ -145,7 +140,6 @@ export const repositionSim = async (
 
   const resp = await axios.request(options)
   const logs = resp.data.result[1].logs
-  console.log('logs', logs)
 
   const collectEvents = logs.filter((l) => l.decoded?.eventName == 'Collect')
   const decreaseEvents = logs.filter(
@@ -265,7 +259,6 @@ const getCollectedFeeAmounts = (
   token0Decimals,
   token1Decimals
 ) => {
-  console.log('collectEvents', collectEvents)
   const token0FeesCollected = !!collectEvents[0].decoded.inputs[4]
     ? collectEvents[0].decoded.inputs[4].value
     : 0
