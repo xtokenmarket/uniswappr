@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Toast } from 'flowbite-react'
 import {
   chain,
   configureChains,
@@ -17,7 +18,6 @@ import Navbar from './components/Navbar'
 import ConnectWalletPage from './pages/ConnectWalletPage'
 import MainPage from './pages/MainPage'
 import NoLpPositionsPage from './pages/NoLpPositionsPage'
-
 import { usePositions } from './hooks/usePositions'
 
 const { provider } = configureChains(
@@ -41,10 +41,9 @@ const Main = () => {
   const { chain } = getNetwork()
   const { chains, error, isLoading, pendingChainId, switchNetwork } =
     useSwitchNetwork()
-  
+
   const [positions] = usePositions(signer)
   const hasLpPositions = !!positions
-
 
   const getPageComponent = () => {
     if (isConnected) {
@@ -80,10 +79,29 @@ const Main = () => {
       <div className="mb-2.5">
         <Navbar />
       </div>
+      <div className="flex items-center w-50 mx-10 p-2 bg-purple-50">
+        <div className="">
+          <p>
+            Uniswappr is available on Arbitrum, Optimism and Polygon. Uniswappr
+            is unaudited and still undergoing testing.{' '}
+          </p>
+          <p>
+            Do not use Uniswappr for high value transactions or low liquidity
+            tokens. Have any feedback or need help? Join us in the
+            #troubleshooting channel of the{' '}
+            <a
+              href="https://discord.gg/QCp8QBWB72"
+              rel="noreferrer"
+              target="_blank"
+              className="underline"
+            >
+              xToken discord
+            </a>
+            .
+          </p>
+        </div>
+      </div>
       <div className="">{getPageComponent()}</div>
-      {/* <div className="mt-2.5">
-        <Footer />
-      </div> */}
     </div>
   )
 }
