@@ -28,7 +28,7 @@ export const getSwapParams = async (
   const token1Decimals = await token1.decimals.call()
 
   const poolPrice = await xtokenPositionManager.getPoolPrice(currentPositionId)
-  // exchanging 1 token0 for x token1
+  // exchanging 1 token0 for ? token1
   const quote = await getQuote(
     signerOrProvider,
     token0.address,
@@ -44,13 +44,14 @@ export const getSwapParams = async (
   /* 
    Current Situation
   */
-  // valueDepositedToken0InToken1Terms
   const currentToken0Deposits = bn(currentDeposited.amount0).add(
     bn(collectableFees.amount0)
   )
+
+  // token0 valueDeposited in token1 terms
   const valueDepositedToken0 = bn(currentToken0Deposits)
-  .mul(bn(quote))
-  .div(bn(10).pow(token0Decimals))
+    .mul(bn(quote))
+    .div(bn(10).pow(token0Decimals))
 
   const valueDepositedToken1 = currentDeposited.amount1.add(
     collectableFees.amount1
@@ -74,13 +75,18 @@ export const getSwapParams = async (
       lowerPrice,
       higherPrice
     )
+
+  // value in token1 terms
   const pseudoValueDepositedToken0 = bn(pseudoDepositedTarget.amount0Minted)
     .mul(bn(quote))
     .div(bn(10).pow(token0Decimals))
+
   const pseudoValueDepositedToken1 = pseudoDepositedTarget.amount1Minted
+
   const pseuooTotalValueInToken1Terms = pseudoValueDepositedToken0.add(
     bn(pseudoValueDepositedToken1)
   )
+
   const targetToken0ValueShare =
     Number(pseudoValueDepositedToken0) / Number(pseuooTotalValueInToken1Terms)
 
@@ -88,7 +94,7 @@ export const getSwapParams = async (
   if (targetToken0ValueShare == 0) {
     tokenToSwap = 'token0'
     tokenAmountToSwap = currentDeposited.amount0
-  } else if (targetToken0ValueShare == 100) {
+  } else if (targetToken0ValueShare == 1) {
     tokenToSwap = 'token1'
     tokenAmountToSwap = currentDeposited.amount1
   } else if (targetToken0ValueShare > currentToken0ValueShare) {
@@ -96,15 +102,22 @@ export const getSwapParams = async (
     tokenToSwap = 'token1'
     tokenAmountToSwap = Math.trunc(
       (targetToken0ValueShare - currentToken0ValueShare) *
-        Number(currentDeposited.amount1) *
-        2
+        Number(currentDeposited.amount1)
     )
   } else {
-    tokenAmountToSwap = Math.trunc(
-      (currentToken0ValueShare - targetToken0ValueShare) *
-        Number(currentDeposited.amount0) *
-        2
+    const token0ToSwapInToken1Terms = Math.trunc(
+      Number(totalValueInToken1Terms) *
+        (currentToken0ValueShare - targetToken0ValueShare)
     )
+
+    tokenAmountToSwap = await getQuote(
+      signerOrProvider,
+      token1.address,
+      token0.address,
+      poolFee,
+      String(token0ToSwapInToken1Terms)
+    )
+
     tokenToSwap = 'token0'
   }
 

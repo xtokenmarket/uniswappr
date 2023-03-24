@@ -84,7 +84,6 @@ export const repositionSim = async (
     amount0Max: MAX_UINT128,
     amount1Max: MAX_UINT128,
   })
-  console.log('collectableFees', collectableFees)
 
   const { tokenToSwap, tokenAmountToSwap } = await getSwapParams(
     signerOrProvider,
@@ -173,6 +172,7 @@ export const repositionSim = async (
 
   const newStakedAmounts = getNewStakedAmounts(
     mintEvent,
+    repositionEvent,
     token0Decimals,
     token1Decimals
   )
@@ -216,7 +216,7 @@ export const repositionSim = async (
     token1Text,
   ]
 
-  const unformattedNewStakedAmounts = getNewStakedAmountsUnformatted(mintEvent)
+  const unformattedNewStakedAmounts = getNewStakedAmountsUnformatted(mintEvent, repositionEvent)
   const fullRepositionParams = {
     positionId: Number(positionId),
     newTickLower: Number(newTickLower),
@@ -229,7 +229,6 @@ export const repositionSim = async (
       .div(100),
     oneInchData,
   }
-  console.log('fullRepositionParams', fullRepositionParams)
 
   return {
     feeAmountsCollected,
@@ -288,20 +287,29 @@ const getRemovedLiquidityAmounts = (
   }
 }
 
-const getNewStakedAmounts = (mintEvent, token0Decimals, token1Decimals) => {
+const getNewStakedAmounts = (mintEvent, repositionEvent, token0Decimals, token1Decimals) => {
   const { token0Staked, token1Staked } =
-    getNewStakedAmountsUnformatted(mintEvent)
+    getNewStakedAmountsUnformatted(mintEvent, repositionEvent)
   return {
     token0Staked: token0Staked / 10 ** token0Decimals,
     token1Staked: token1Staked / 10 ** token1Decimals,
   }
 }
 
-const getNewStakedAmountsUnformatted = (mintEvent) => {
-  const inputs = mintEvent[0].decoded.inputs
+const getNewStakedAmountsUnformatted = (mintEvent, repositionEvent) => {
+  const mintInputs = mintEvent?.decoded?.inputs
+  const repositionInputs = repositionEvent[0]?.decoded?.inputs
+
+  if(!mintInputs){
+    return {
+      token0Staked: repositionInputs[6].value,
+      token1Staked: repositionInputs[7].value,
+    }
+  }
+
   return {
-    token0Staked: inputs[5].value,
-    token1Staked: inputs[6].value,
+    token0Staked: mintInputs[5].value,
+    token1Staked: mintInputs[6].value,
   }
 }
 
