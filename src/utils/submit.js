@@ -139,7 +139,6 @@ export const repositionSim = async (
 
   const resp = await axios.request(options)
   const logs = resp.data.result[1].logs
-  console.log('logs', logs)
 
   const collectEvents = logs.filter((l) => l.decoded?.eventName == 'Collect')
   const decreaseEvents = logs.filter(
