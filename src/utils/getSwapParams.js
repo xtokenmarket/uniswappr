@@ -28,7 +28,7 @@ export const getSwapParams = async (
   const token1Decimals = await token1.decimals.call()
 
   const poolPrice = await xtokenPositionManager.getPoolPrice(currentPositionId)
-  // exchanging 1 token0 for x token1
+  // exchanging 1 token0 for ? token1
   const quote = await getQuote(
     signerOrProvider,
     token0.address,
@@ -36,34 +36,46 @@ export const getSwapParams = async (
     poolFee,
     String(10 ** token0Decimals)
   )
+  console.log('quote', quote.toString())
 
   const currentDeposited = await xtokenPositionManager.getStakedTokenBalance(
     currentPositionId
   )
+  console.log('currentDeposited[0]', currentDeposited[0].toString())
+  console.log('currentDeposited[1]', currentDeposited[1].toString())
 
   /* 
    Current Situation
   */
-  // valueDepositedToken0InToken1Terms
+  console.log('*****current situation***')
   const currentToken0Deposits = bn(currentDeposited.amount0).add(
     bn(collectableFees.amount0)
   )
+
+  // token0 valueDeposited in token1 terms
   const valueDepositedToken0 = bn(currentToken0Deposits)
-  .mul(bn(quote))
-  .div(bn(10).pow(token0Decimals))
+    .mul(bn(quote))
+    .div(bn(10).pow(token0Decimals))
+  console.log('valueDepositedToken0', valueDepositedToken0.toString())
 
   const valueDepositedToken1 = currentDeposited.amount1.add(
     collectableFees.amount1
   )
+  console.log('valueDepositedToken1', valueDepositedToken1.toString())
   const totalValueInToken1Terms = valueDepositedToken0.add(
     bn(valueDepositedToken1)
   )
+  console.log('totalValueInToken1Terms', totalValueInToken1Terms.toString())
   const currentToken0ValueShare =
     Number(valueDepositedToken0) / Number(totalValueInToken1Terms)
 
+  console.log('currentToken0ValueShare', currentToken0ValueShare.toString())
+
+  console.log('*****')
   /* 
    Target Situation
   */
+  console.log('*****target situation***')
   const lowerPrice = await xtokenPositionManager.getPriceFromTick(newTickLower)
   const higherPrice = await xtokenPositionManager.getPriceFromTick(newTickUpper)
   const pseudoDepositedTarget =
@@ -74,15 +86,38 @@ export const getSwapParams = async (
       lowerPrice,
       higherPrice
     )
+  console.log(
+    'pseudoDepositedTarget amount0minted',
+    pseudoDepositedTarget.amount0Minted.toString()
+  )
+  console.log(
+    'pseudoDepositedTarget amount1minted',
+    pseudoDepositedTarget.amount1Minted.toString()
+  )
+  // value in token1 terms
   const pseudoValueDepositedToken0 = bn(pseudoDepositedTarget.amount0Minted)
     .mul(bn(quote))
     .div(bn(10).pow(token0Decimals))
+
+  console.log(
+    'pseudoValueDepositedToken0',
+    pseudoValueDepositedToken0.toString()
+  )
   const pseudoValueDepositedToken1 = pseudoDepositedTarget.amount1Minted
+  console.log(
+    'pseudoValueDepositedToken1',
+    pseudoValueDepositedToken1.toString()
+  )
   const pseuooTotalValueInToken1Terms = pseudoValueDepositedToken0.add(
     bn(pseudoValueDepositedToken1)
+    )
+  console.log(
+    'pseuooTotalValueInToken1Terms',
+    pseuooTotalValueInToken1Terms.toString()
   )
   const targetToken0ValueShare =
     Number(pseudoValueDepositedToken0) / Number(pseuooTotalValueInToken1Terms)
+  console.log('targetToken0ValueShare', targetToken0ValueShare.toString())  
 
   let tokenToSwap, tokenAmountToSwap
   if (targetToken0ValueShare == 0) {
@@ -96,14 +131,12 @@ export const getSwapParams = async (
     tokenToSwap = 'token1'
     tokenAmountToSwap = Math.trunc(
       (targetToken0ValueShare - currentToken0ValueShare) *
-        Number(currentDeposited.amount1) *
-        2
+        Number(currentDeposited.amount1)
     )
   } else {
     tokenAmountToSwap = Math.trunc(
       (currentToken0ValueShare - targetToken0ValueShare) *
-        Number(currentDeposited.amount0) *
-        2
+        Number(currentDeposited.amount0)
     )
     tokenToSwap = 'token0'
   }
