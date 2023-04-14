@@ -154,7 +154,6 @@ export function usePositions(signerOrProvider: any) {
 
           positions.push(positionDetails)
         }
-        console.log('positions', positions)
 
         setPositions(positions)
       }

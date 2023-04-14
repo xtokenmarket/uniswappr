@@ -76,7 +76,6 @@ export const repositionSim = async (
   const { token0, token1 } = positionData
   const token0Decimals = token0.decimals
   const token1Decimals = token1.decimals
-  console.log('repositionParams', repositionParams)
 
   const MAX_UINT128 = BigNumber.from(2).pow(128).sub(1)
   const collectableFees = await uniPositionManager.callStatic.collect({
@@ -140,7 +139,6 @@ export const repositionSim = async (
 
   const resp = await axios.request(options)
   const logs = resp.data.result[1].logs
-  console.log('logs', logs)
 
   const collectEvents = logs.filter((l) => l.decoded?.eventName == 'Collect')
   const decreaseEvents = logs.filter(
