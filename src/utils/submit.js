@@ -145,9 +145,12 @@ export const repositionSim = async (
     (l) => l.decoded?.eventName == 'DecreaseLiquidity'
   )
   const swapEvent = logs.filter((l) => l.decoded?.eventName == 'Swap')
+  const swappedEvent = logs.filter((l) => l.decoded?.eventName == 'Swapped')
   const transferEvents = logs.filter((l) => l.decoded?.eventName == 'Transfer')
   const mintEvent = logs.filter((l) => l.decoded?.eventName == 'Mint')
-  const repositionEvent = logs.filter((l) => l.decoded?.eventName == 'Repositioned')
+  const repositionEvent = logs.filter(
+    (l) => l.decoded?.eventName == 'Repositioned'
+  )
 
   const feeAmountsCollected = getCollectedFeeAmounts(
     collectEvents,
@@ -160,7 +163,7 @@ export const repositionSim = async (
     token1Decimals
   )
 
-  const swapData = getSwapData(swapEvent, token0, token1)
+  const swapData = getSwapData(swapEvent, swappedEvent, token0, token1)
 
   const newPositionData = getNewPositionData(
     mintEvent,
@@ -216,7 +219,10 @@ export const repositionSim = async (
     token1Text,
   ]
 
-  const unformattedNewStakedAmounts = getNewStakedAmountsUnformatted(mintEvent, repositionEvent)
+  const unformattedNewStakedAmounts = getNewStakedAmountsUnformatted(
+    mintEvent,
+    repositionEvent
+  )
   const fullRepositionParams = {
     positionId: Number(positionId),
     newTickLower: Number(newTickLower),
@@ -248,6 +254,7 @@ export const getOneInchCalldata = async (
   fromToken,
   toToken
 ) => {
+  if (swapAmount.toString() == '0') return '0x'
   let apiUrl = `https://api.1inch.exchange/v4.0/${networkId}/swap?fromTokenAddress=${fromToken}&toTokenAddress=${toToken}&amount=${swapAmount}&fromAddress=${lpSwapperAddress}&slippage=50&disableEstimate=true`
   let response = await axios.get(apiUrl)
   return response.data.tx.data
@@ -287,9 +294,16 @@ const getRemovedLiquidityAmounts = (
   }
 }
 
-const getNewStakedAmounts = (mintEvent, repositionEvent, token0Decimals, token1Decimals) => {
-  const { token0Staked, token1Staked } =
-    getNewStakedAmountsUnformatted(mintEvent, repositionEvent)
+const getNewStakedAmounts = (
+  mintEvent,
+  repositionEvent,
+  token0Decimals,
+  token1Decimals
+) => {
+  const { token0Staked, token1Staked } = getNewStakedAmountsUnformatted(
+    mintEvent,
+    repositionEvent
+  )
   return {
     token0Staked: token0Staked / 10 ** token0Decimals,
     token1Staked: token1Staked / 10 ** token1Decimals,
@@ -300,7 +314,7 @@ const getNewStakedAmountsUnformatted = (mintEvent, repositionEvent) => {
   const mintInputs = mintEvent?.decoded?.inputs
   const repositionInputs = repositionEvent[0]?.decoded?.inputs
 
-  if(!mintInputs){
+  if (!mintInputs) {
     return {
       token0Staked: repositionInputs[6].value,
       token1Staked: repositionInputs[7].value,
@@ -313,12 +327,18 @@ const getNewStakedAmountsUnformatted = (mintEvent, repositionEvent) => {
   }
 }
 
-const getNewPositionData = (mintEvent, repositionEvent, token0, token1, chainId) => {
+const getNewPositionData = (
+  mintEvent,
+  repositionEvent,
+  token0,
+  token1,
+  chainId
+) => {
   const mintInputs = mintEvent[0]?.decoded?.inputs
   const repositionInputs = repositionEvent[0]?.decoded?.inputs
 
   let newLowerTick, newUpperTick
-  if(!mintInputs){
+  if (!mintInputs) {
     newLowerTick = repositionInputs[4].value
     newUpperTick = repositionInputs[5].value
   } else {
@@ -341,23 +361,44 @@ const getNewPositionData = (mintEvent, repositionEvent, token0, token1, chainId)
   }
 }
 
-const getSwapData = (swapEvent, token0, token1) => {
-  if (!swapEvent.length) return `No swaps performed`
+const getSwapData = (swapEvent, swappedEvent, token0, token1) => {
+  if (!swapEvent.length && !swappedEvent.length) {
+    return `No swaps performed`
+  }
 
-  const inputs = swapEvent[0].decoded.inputs
-
+  let inputs
   let tokenOut, tokenIn, tokenOutAmount, tokenInAmount
-  if (Number(inputs[2].value) > 0) {
-    // token0 swapped out, token1 received in
-    tokenOut = token0.symbol
-    tokenIn = token1.symbol
-    tokenOutAmount = inputs[2].value / 10 ** token0.decimals
-    tokenInAmount = inputs[5].value / 10 ** token1.decimals
+
+  if (!swapEvent.length) {
+    // use swappedEvent
+    inputs = swappedEvent[0].decoded.inputs
+    if (inputs[1].value == token0.address) {
+      // token0 is tokenOut
+      tokenOut = token0.symbol
+      tokenIn = token1.symbol
+      tokenOutAmount = inputs[4].value / 10 ** token0.decimals
+      tokenInAmount = inputs[5].value / 10 ** token1.decimals
+    } else {
+      tokenOut = token1.symbol
+      tokenIn = token0.symbol
+      tokenOutAmount = inputs[4].value / 10 ** token1.decimals
+      tokenInAmount = inputs[5].value / 10 ** token0.decimals
+    }
   } else {
-    tokenOut = token1.symbol
-    tokenIn = token0.symbol
-    tokenOutAmount = inputs[3].value / 10 ** token1.decimals
-    tokenInAmount = inputs[4].value / 10 ** token0.decimals
+    // use swapEvent
+    inputs = swapEvent[0].decoded.inputs
+    if (Number(inputs[2].value) > 0) {
+      // token0 swapped out, token1 received in
+      tokenOut = token0.symbol
+      tokenIn = token1.symbol
+      tokenOutAmount = inputs[2].value / 10 ** token0.decimals
+      tokenInAmount = inputs[5].value / 10 ** token1.decimals
+    } else {
+      tokenOut = token1.symbol
+      tokenIn = token0.symbol
+      tokenOutAmount = inputs[3].value / 10 ** token1.decimals
+      tokenInAmount = inputs[4].value / 10 ** token0.decimals
+    }
   }
 
   return `Swap ${String(tokenOutAmount).slice(0, 7)} ${tokenOut} for ${String(
@@ -385,22 +426,26 @@ const getTokenRetrievals = (
   let token0Retrieved, token1Retrieved
 
   if (!token0Retrieval) {
-    const nonDecodedEvent = allEvents.filter(
-      (e) =>
+    const nonDecodedEvent = allEvents.filter((e) => {
+      return (
+        ethers.utils.isAddress(e.topics[2]) &&
         ethers.utils.getAddress(e.address) === token0.address &&
         userAddress === ethers.utils.getAddress(e.topics[2])
-    )
+      )
+    })
     token0Retrieved = parseInt(nonDecodedEvent[0].data, 16)
   } else {
     token0Retrieved = token0Retrieval.decoded.inputs[2].value
   }
 
   if (!token1Retrieval) {
-    const nonDecodedEvent = allEvents.filter(
-      (e) =>
+    const nonDecodedEvent = allEvents.filter((e) => {
+      return (
+        ethers.utils.isAddress(e.topics[2]) &&
         ethers.utils.getAddress(e.address) === token1.address &&
         userAddress === ethers.utils.getAddress(e.topics[2])
-    )
+      )
+    })
     token1Retrieved = parseInt(nonDecodedEvent[0].data, 16)
   } else {
     token1Retrieved = token1Retrieval.decoded.inputs[2].value
