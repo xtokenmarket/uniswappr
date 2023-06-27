@@ -38,11 +38,15 @@ export function usePositions(signerOrProvider: any) {
         const positions = []
 
         for (let i = 0; i < Number(positionQty); i++) {
-          const positionId = await uniPositionManager.tokenOfOwnerByIndex(
-            signerOrProvider._address,
-            i
-          )
-          positionIds.push(String(positionId))
+          try {
+            const positionId = await uniPositionManager.tokenOfOwnerByIndex(
+              signerOrProvider._address,
+              i
+            )
+            positionIds.push(String(positionId))
+          } catch (e) {
+            console.log(e)
+          }
         }
 
         for (let i = 0; i < positionIds.length; i++) {
